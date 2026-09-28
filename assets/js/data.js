@@ -8,16 +8,56 @@ window.GWC_REPORT_DATA = {
   months: {
     "2026-08": {
       label: "August 2026",
+      previousLabel: "July 2026",
       overview: {
         posts: 46,
         followers: 58638,
-        followersChange: 1.4,
         newFollowers: 836,
         impressions: 92189,
         reach: 41737,
         engagements: 17645
       },
+      comparison: {
+        overview: {
+          posts: { previous: 15, delta: 206.7 },
+          followers: { previous: 57802, delta: 1.4 },
+          newFollowers: { previous: 740, delta: 13.0, derived: true },
+          impressions: { previous: 46510, delta: 98.2 },
+          reach: { previous: null, delta: null, note: "July total not comparable" },
+          engagements: { previous: 5311, delta: 232.2 }
+        },
+        platforms: {
+          linkedin: {
+            posts: { previous: 4, delta: 250 },
+            followers: { previous: 48510, delta: 1.3 },
+            newFollowers: { previous: 520, delta: 17.1, derived: true },
+            impressions: { previous: 21283, delta: 113 },
+            reach: { previous: null, delta: null, note: "July reach not tracked" },
+            engagements: { previous: 4423, delta: 264 },
+            engagementRate: { previous: null, delta: null, note: "Previous ER not supplied" }
+          },
+          instagram: {
+            posts: { previous: 6, delta: 200 },
+            followers: { previous: 8533, delta: 2.6 },
+            newFollowers: { previous: 219, delta: 3.2, derived: true },
+            impressions: { previous: 24560, delta: 80 },
+            reach: { previous: null, delta: 57, note: "Report states +57% vs Jul" },
+            engagements: { previous: 872, delta: 70 },
+            engagementRate: { previous: null, delta: null, note: "Previous ER not supplied" }
+          },
+          x: {
+            posts: { previous: 5, delta: 180 },
+            followers: { previous: 759, delta: 0.1 },
+            newFollowers: { previous: 1, delta: 0, derived: true },
+            impressions: { previous: 667, delta: 302 },
+            reach: { previous: null, delta: null, note: "Reach not reported for X" },
+            engagements: { previous: 16, delta: 269 },
+            engagementRate: { previous: null, delta: null, note: "Previous ER not supplied" }
+          }
+        }
+      },
       trend: {
+        label: "Apr-Aug 2026",
         labels: ["Apr", "May", "Jun", "Jul", "Aug"],
         linkedin: {
           posts: [5, 16, 18, 4, 14],
@@ -41,10 +81,8 @@ window.GWC_REPORT_DATA = {
       platforms: {
         linkedin: {
           name: "LinkedIn",
-          icon: "in",
           posts: 14,
           followers: 49119,
-          followerChange: 1.3,
           newFollowers: 609,
           impressions: 45242,
           reach: 21689,
@@ -84,10 +122,8 @@ window.GWC_REPORT_DATA = {
         },
         instagram: {
           name: "Instagram",
-          icon: "ig",
           posts: 18,
           followers: 8759,
-          followerChange: 2.6,
           newFollowers: 226,
           impressions: 44263,
           reach: 20048,
@@ -103,7 +139,7 @@ window.GWC_REPORT_DATA = {
           ],
           language: "0% English Only · 100% Bilingual",
           topPost: {
-            title: "10 days. That is how quickly GWC Group’s ...",
+            title: "10 days. That is how quickly GWC Group's ...",
             date: "11 Aug · 02:17 PM",
             er: 4.19,
             impressions: 7349,
@@ -127,10 +163,8 @@ window.GWC_REPORT_DATA = {
         },
         x: {
           name: "X",
-          icon: "x",
           posts: 14,
           followers: 760,
-          followerChange: 0.1,
           newFollowers: 1,
           impressions: 2684,
           reach: null,
@@ -171,31 +205,31 @@ window.GWC_REPORT_DATA = {
       insights: [
         {
           platform: "All platforms",
-          area: "Output increased significantly across LinkedIn, Instagram and X.",
-          action: "Maintain the publishing momentum and keep all three channels on a consistent weekly schedule.",
+          area: "LinkedIn, Instagram and X all increased output significantly in August.",
+          action: "Maintain the publishing momentum built in August and keep all three channels on a consistent weekly schedule.",
           timeline: "Ongoing"
         },
         {
           platform: "LinkedIn",
-          area: "Strong month overall, but video was introduced with only one post.",
+          area: "Strong month overall, but video was introduced for the first time with only one post.",
           action: "Increase video frequency while maintaining the document format that consistently drives high engagement.",
           timeline: "Next 30 days"
         },
         {
           platform: "Instagram",
-          area: "Formal announcements saw lower engagement than operational and human-interest content.",
+          area: "Formal announcements saw lower engagement compared with operational and human-interest content.",
           action: "Lead with operational stories and people-focused content; continue prioritising carousels and reels.",
           timeline: "Next 30 days"
         },
         {
           platform: "X",
-          area: "Output increased significantly, but follower growth and engagement remained minimal.",
-          action: "If X remains a priority, consider targeted support for follower growth and reassess channel effort.",
+          area: "Output tripled but the channel gained only one new follower and engagement remained minimal.",
+          action: "If X remains a priority, explore targeted support for follower growth and reassess channel effort.",
           timeline: "Quarter end"
         },
         {
           platform: "Measurement",
-          area: "Reporting should remain on one tool and one basis to stay comparable.",
+          area: "All reporting must stay on one tool and one basis to remain comparable.",
           action: "Keep LinkedIn, Instagram and X sourced consistently from Meltwater.",
           timeline: "Ongoing"
         }
@@ -203,4 +237,3 @@ window.GWC_REPORT_DATA = {
     }
   }
 };
-
