@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GWC Social Media Performance Dashboard</title>
-  <meta name="description" content="Interactive GWC social media performance dashboard prototype.">
+  <meta name="description" content="Interactive GWC social media performance dashboard with month-on-month comparison.">
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
@@ -20,7 +20,7 @@
         <div class="header-copy">
           <div class="eyebrow">Monthly reporting</div>
           <h1 class="page-title">Social Media Performance</h1>
-          <div class="page-meta"><span id="monthMeta">August 2026</span> · Organic performance · Source: Meltwater</div>
+          <div class="page-meta"><span id="monthMeta">August 2026</span> <span class="comparison-inline" id="comparisonMeta">vs July 2026</span> · Organic performance · Source: Meltwater</div>
         </div>
       </div>
 
@@ -35,31 +35,21 @@
 
     <nav class="nav-tabs-clean" role="tablist" aria-label="Report sections">
       <button class="nav-link active" id="tab-overview" data-bs-toggle="tab" data-bs-target="#pane-overview" type="button" role="tab" aria-controls="pane-overview" aria-selected="true">Overview</button>
-      <button class="nav-link" id="tab-linkedin" data-bs-toggle="tab" data-bs-target="#pane-linkedin" type="button" role="tab" aria-controls="pane-linkedin" aria-selected="false">LinkedIn</button>
-      <button class="nav-link" id="tab-instagram" data-bs-toggle="tab" data-bs-target="#pane-instagram" type="button" role="tab" aria-controls="pane-instagram" aria-selected="false">Instagram</button>
-      <button class="nav-link" id="tab-x" data-bs-toggle="tab" data-bs-target="#pane-x" type="button" role="tab" aria-controls="pane-x" aria-selected="false">X</button>
+      <button class="nav-link" id="tab-linkedin" data-bs-toggle="tab" data-bs-target="#pane-linkedin" type="button" role="tab" aria-controls="pane-linkedin" aria-selected="false"><span class="tab-label"><i class="bi bi-linkedin tab-icon" aria-hidden="true"></i><span>LinkedIn</span></span></button>
+      <button class="nav-link" id="tab-instagram" data-bs-toggle="tab" data-bs-target="#pane-instagram" type="button" role="tab" aria-controls="pane-instagram" aria-selected="false"><span class="tab-label"><i class="bi bi-instagram tab-icon" aria-hidden="true"></i><span>Instagram</span></span></button>
+      <button class="nav-link" id="tab-x" data-bs-toggle="tab" data-bs-target="#pane-x" type="button" role="tab" aria-controls="pane-x" aria-selected="false"><span class="tab-label"><i class="bi bi-twitter-x tab-icon" aria-hidden="true"></i><span>X</span></span></button>
       <button class="nav-link" id="tab-insights" data-bs-toggle="tab" data-bs-target="#pane-insights" type="button" role="tab" aria-controls="pane-insights" aria-selected="false">Insights</button>
     </nav>
 
     <main class="dashboard-main tab-content" id="dashboardContent">
-      <section class="tab-pane fade show active" id="pane-overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0">
-        <div id="overviewContent"></div>
-      </section>
-      <section class="tab-pane fade" id="pane-linkedin" role="tabpanel" aria-labelledby="tab-linkedin" tabindex="0">
-        <div id="linkedinContent"></div>
-      </section>
-      <section class="tab-pane fade" id="pane-instagram" role="tabpanel" aria-labelledby="tab-instagram" tabindex="0">
-        <div id="instagramContent"></div>
-      </section>
-      <section class="tab-pane fade" id="pane-x" role="tabpanel" aria-labelledby="tab-x" tabindex="0">
-        <div id="xContent"></div>
-      </section>
-      <section class="tab-pane fade" id="pane-insights" role="tabpanel" aria-labelledby="tab-insights" tabindex="0">
-        <div id="insightsContent"></div>
-      </section>
+      <section class="tab-pane fade show active" id="pane-overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"><div id="overviewContent"></div></section>
+      <section class="tab-pane fade" id="pane-linkedin" role="tabpanel" aria-labelledby="tab-linkedin" tabindex="0"><div id="linkedinContent"></div></section>
+      <section class="tab-pane fade" id="pane-instagram" role="tabpanel" aria-labelledby="tab-instagram" tabindex="0"><div id="instagramContent"></div></section>
+      <section class="tab-pane fade" id="pane-x" role="tabpanel" aria-labelledby="tab-x" tabindex="0"><div id="xContent"></div></section>
+      <section class="tab-pane fade" id="pane-insights" role="tabpanel" aria-labelledby="tab-insights" tabindex="0"><div id="insightsContent"></div></section>
     </main>
 
-    <div class="footer-note">© 2026 GWC Marketing Team</div>
+    <div class="footer-note">© 2026 GWC Marketing Team | Anooj Korampatta</div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -69,3 +59,5 @@
   <script src="assets/js/app.js"></script>
 </body>
 </html>
+
+  
