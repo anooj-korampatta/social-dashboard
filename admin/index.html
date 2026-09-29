@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/ai-admin.css">
 </head>
 <body class="admin-body">
   <div class="admin-app" id="appLayout">
@@ -21,6 +22,7 @@
         <a class="admin-nav-link" href="#reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span></a>
         <a class="admin-nav-link" href="#new-report"><i class="bi bi-plus-square"></i><span>New report</span></a>
         <a class="admin-nav-link" href="#import-meltwater"><i class="bi bi-file-earmark-spreadsheet"></i><span>Import Meltwater</span></a>
+        <a class="admin-nav-link" href="#smart-ai-search"><i class="bi bi-stars"></i><span>AI Search</span></a>
       </nav>
       <div class="admin-sidebar-label">Public</div>
       <nav class="admin-nav admin-nav-secondary">
@@ -129,6 +131,34 @@
         </div>
       </section>
 
+      <section class="admin-panel ai-settings-panel" id="smart-ai-search">
+        <div class="admin-panel-head ai-settings-head">
+          <div>
+            <div class="ai-settings-kicker"><i class="bi bi-stars"></i> Smart feature</div>
+            <h2>AI Search</h2>
+            <p>Control whether the natural-language analytics search is visible on the public dashboard.</p>
+          </div>
+          <span class="ai-feature-status" id="aiFeatureStatus"><span></span>Checking…</span>
+        </div>
+
+        <div class="ai-settings-body">
+          <div class="ai-setting-copy">
+            <strong>Show AI Search on dashboard</strong>
+            <span>When enabled, viewers can ask questions about published LinkedIn, Instagram and X reporting data. Draft reports are never included.</span>
+          </div>
+          <label class="ai-toggle" for="aiSearchEnabled">
+            <input id="aiSearchEnabled" type="checkbox" role="switch" aria-label="Enable AI Search">
+            <span class="ai-toggle-track"><span class="ai-toggle-thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="ai-settings-footer">
+          <div class="ai-settings-note"><i class="bi bi-shield-check"></i><span>AI Search is grounded in published Supabase reporting data. The OpenAI API key remains server-side in a Supabase Edge Function.</span></div>
+          <button class="btn btn-dark" id="saveAiSettingsBtn" type="button" disabled><i class="bi bi-check2 me-2"></i>Save setting</button>
+        </div>
+        <div id="aiSettingsAlert" class="alert d-none mt-3 mb-0" role="status"></div>
+      </section>
+
     </main>
   </div>
 
@@ -139,5 +169,6 @@
   <script src="../assets/js/ui-shell.js"></script>
   <script src="../assets/js/admin-list.js"></script>
   <script src="../assets/js/meltwater-import.js"></script>
+  <script src="../assets/js/ai-settings.js"></script>
 </body>
 </html>
