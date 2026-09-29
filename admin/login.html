@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GWC Reporting Admin Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin-login-body">
+  <main class="login-layout">
+    <section class="login-brand-panel">
+      <div class="login-brand-lockup">
+        <div class="login-logo-box"><img src="../assets/images/gwc-logo-placeholder.svg" alt="GWC"></div>
+        <div><strong>GWC</strong><span>Social Media Reporting</span></div>
+      </div>
+      <div class="login-brand-copy">
+        <div class="admin-eyebrow">Reporting portal</div>
+        <h1>One place for monthly performance reporting.</h1>
+        <p>Manage platform metrics, month-on-month comparisons, featured posts and management insights.</p>
+      </div>
+      <div class="login-feature-list">
+        <div><i class="bi bi-check2-circle"></i>Draft, preview and publish workflow</div>
+        <div><i class="bi bi-check2-circle"></i>Automatic MoM calculations</div>
+        <div><i class="bi bi-check2-circle"></i>Supabase-backed secure admin access</div>
+      </div>
+    </section>
+
+    <section class="login-form-panel">
+      <div class="login-card">
+        <div class="login-icon"><i class="bi bi-shield-lock"></i></div>
+        <div class="admin-eyebrow">Reporting CMS</div>
+        <h2>Welcome back</h2>
+        <p>Sign in with your authorised marketing account.</p>
+        <div id="loginAlert" class="alert d-none" role="alert"></div>
+        <form id="loginForm" novalidate>
+          <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email" autocomplete="email" placeholder="name@company.com" required></div>
+          <div class="mb-4"><label class="form-label" for="password">Password</label><input class="form-control" id="password" type="password" autocomplete="current-password" placeholder="Password" required></div>
+          <button class="btn btn-dark w-100" id="loginBtn" type="submit">Sign in</button>
+        </form>
+        <div class="login-foot"><a href="../index.html"><i class="bi bi-arrow-left me-1"></i>Back to public dashboard</a></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/admin-login.js"></script>
+</body>
+</html>

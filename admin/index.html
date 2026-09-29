@@ -1,1 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GWC Reporting CMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-app" id="appLayout">
+    <aside class="admin-sidebar" id="appSidebar" aria-label="CMS navigation">
+      <div class="admin-sidebar-brand">
+        <div class="admin-brand-mark"><img src="../assets/images/gwc-logo-placeholder.svg" alt="GWC"></div>
+        <div class="admin-brand-copy"><strong>GWC</strong><span>Reporting CMS</span></div>
+      </div>
+      <nav class="admin-nav">
+        <a class="admin-nav-link active" href="index.html"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+        <a class="admin-nav-link" href="#reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span></a>
+        <a class="admin-nav-link" href="#new-report"><i class="bi bi-plus-square"></i><span>New report</span></a>
+      </nav>
+      <div class="admin-sidebar-label">Public</div>
+      <nav class="admin-nav admin-nav-secondary">
+        <a class="admin-nav-link" href="../index.html" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i><span>View dashboard</span></a>
+      </nav>
+      <div class="admin-sidebar-label">Account</div>
+      <nav class="admin-nav admin-nav-secondary">
+        <button class="admin-nav-link" id="signOutBtn" type="button"><i class="bi bi-box-arrow-right"></i><span>Sign out</span></button>
+      </nav>
+      <button class="admin-collapse" id="sidebarToggle" type="button" aria-label="Collapse sidebar"><i class="bi bi-chevron-double-left"></i><span>Hide</span></button>
+    </aside>
+    <div class="admin-scrim" id="sidebarScrim"></div>
 
+    <main class="admin-main">
+      <header class="admin-header">
+        <div class="admin-heading-wrap">
+          <button class="admin-mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open navigation"><i class="bi bi-list"></i></button>
+          <div><h1>Dashboard</h1><p>Manage monthly social media reporting and publishing.</p></div>
+        </div>
+        <div class="admin-header-actions">
+          <div class="admin-user-pill"><i class="bi bi-person-circle"></i><span id="userEmail"></span></div>
+          <a class="admin-icon-btn" href="../index.html" target="_blank" rel="noopener" aria-label="View public dashboard"><i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+      </header>
+
+      <div id="adminAlert" class="alert d-none" role="alert"></div>
+
+      <section class="admin-stats" id="adminStats">
+        <article class="admin-stat-card"><div class="admin-stat-icon"><i class="bi bi-files"></i></div><div class="admin-stat-label">Total reports</div><div class="admin-stat-value">—</div><div class="admin-stat-note">Loading</div></article>
+        <article class="admin-stat-card"><div class="admin-stat-icon"><i class="bi bi-check2-circle"></i></div><div class="admin-stat-label">Published</div><div class="admin-stat-value">—</div><div class="admin-stat-note">Live reports</div></article>
+        <article class="admin-stat-card"><div class="admin-stat-icon"><i class="bi bi-pencil-square"></i></div><div class="admin-stat-label">Drafts</div><div class="admin-stat-value">—</div><div class="admin-stat-note">Awaiting publish</div></article>
+        <article class="admin-stat-card"><div class="admin-stat-icon"><i class="bi bi-calendar3"></i></div><div class="admin-stat-label">Latest period</div><div class="admin-stat-value small-value">—</div><div class="admin-stat-note">Most recent record</div></article>
+      </section>
+
+      <div class="admin-grid">
+        <section class="admin-panel reports-panel" id="reports">
+          <div class="admin-panel-head">
+            <div><h2>Reports</h2><p>Draft, preview and publish monthly reporting periods.</p></div>
+            <a class="text-action" href="#new-report">Create new <i class="bi bi-arrow-right"></i></a>
+          </div>
+          <div id="reportList" class="report-list"><div class="admin-loading">Loading reports…</div></div>
+        </section>
+
+        <section class="admin-panel new-report-panel" id="new-report">
+          <div class="admin-panel-head compact"><div><h2>New report</h2><p>Create the month as a draft. MoM is calculated automatically.</p></div></div>
+          <form id="newReportForm" class="new-report-form">
+            <div><label class="form-label" for="reportMonth">Reporting month</label><input class="form-control" type="month" id="reportMonth" required></div>
+            <div><label class="form-label" for="source">Source</label><input class="form-control" type="text" id="source" value="Meltwater" required></div>
+            <div><label class="form-label" for="preparedBy">Prepared by</label><input class="form-control" type="text" id="preparedBy" placeholder="Name / team"></div>
+            <button class="btn btn-success w-100" type="submit"><i class="bi bi-plus-lg me-2"></i>Create draft report</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/ui-shell.js"></script>
+  <script src="../assets/js/admin-list.js"></script>
+</body>
+</html>
