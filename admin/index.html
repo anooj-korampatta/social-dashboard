@@ -20,6 +20,7 @@
         <a class="admin-nav-link active" href="index.html"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
         <a class="admin-nav-link" href="#reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span></a>
         <a class="admin-nav-link" href="#new-report"><i class="bi bi-plus-square"></i><span>New report</span></a>
+        <a class="admin-nav-link" href="#import-meltwater"><i class="bi bi-file-earmark-spreadsheet"></i><span>Import Meltwater</span></a>
       </nav>
       <div class="admin-sidebar-label">Public</div>
       <nav class="admin-nav admin-nav-secondary">
@@ -73,13 +74,70 @@
           </form>
         </section>
       </div>
+
+      <section class="admin-panel import-panel" id="import-meltwater">
+        <div class="admin-panel-head import-panel-head">
+          <div>
+            <h2>Import Meltwater files</h2>
+            <p>Select the reporting month and upload one Meltwater export for LinkedIn, Instagram and X. The files are analysed in your browser before any data is written to Supabase.</p>
+          </div>
+          <span class="import-format-pill"><i class="bi bi-filetype-xlsx"></i> XLSX / XLS / CSV</span>
+        </div>
+
+        <form id="meltwaterImportForm" class="meltwater-import-form">
+          <div class="import-month-field">
+            <label class="form-label" for="importReportMonth">Reporting month</label>
+            <input class="form-control" type="month" id="importReportMonth" required>
+            <div class="import-helper">All three files must belong to this reporting month.</div>
+          </div>
+
+          <div class="import-file-grid">
+            <label class="import-file-card" for="importLinkedinFile">
+              <span class="import-platform-icon"><i class="bi bi-linkedin"></i></span>
+              <span class="import-file-copy"><strong>LinkedIn</strong><small id="importLinkedinName">Choose Meltwater file</small></span>
+              <span class="import-file-action">Browse</span>
+              <input id="importLinkedinFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+            </label>
+
+            <label class="import-file-card" for="importInstagramFile">
+              <span class="import-platform-icon"><i class="bi bi-instagram"></i></span>
+              <span class="import-file-copy"><strong>Instagram</strong><small id="importInstagramName">Choose Meltwater file</small></span>
+              <span class="import-file-action">Browse</span>
+              <input id="importInstagramFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+            </label>
+
+            <label class="import-file-card" for="importXFile">
+              <span class="import-platform-icon"><i class="bi bi-twitter-x"></i></span>
+              <span class="import-file-copy"><strong>X</strong><small id="importXName">Choose Meltwater file</small></span>
+              <span class="import-file-action">Browse</span>
+              <input id="importXFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+            </label>
+          </div>
+
+          <div class="import-actions">
+            <button class="btn btn-outline-dark" id="analyseMeltwaterBtn" type="button"><i class="bi bi-search me-2"></i>Analyse files</button>
+            <button class="btn btn-success" id="importMeltwaterBtn" type="button" disabled><i class="bi bi-cloud-arrow-up me-2"></i>Import to draft &amp; review</button>
+          </div>
+        </form>
+
+        <div id="meltwaterImportAlert" class="alert d-none mt-3" role="alert"></div>
+        <div id="meltwaterImportPreview" class="import-preview d-none" aria-live="polite"></div>
+
+        <div class="import-note">
+          <i class="bi bi-info-circle"></i>
+          <span>The importer fills platform metrics, weekly cadence, content mix, language mix and featured-post statistics where the export contains complete post data. Existing management insights are not overwritten. If an existing published month is re-imported, it is moved back to <strong>Draft</strong> for review before going live again.</span>
+        </div>
+      </section>
+
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/supabase-client.js"></script>
   <script src="../assets/js/ui-shell.js"></script>
   <script src="../assets/js/admin-list.js"></script>
+  <script src="../assets/js/meltwater-import.js"></script>
 </body>
 </html>
