@@ -366,3 +366,121 @@ textarea.form-control { min-height: 112px; resize: vertical; }
   .admin-stats { grid-template-columns: 1fr; }
   .admin-main { padding-left: 14px; padding-right: 14px; }
 }
+
+/* Meltwater import */
+.import-panel { margin-top: 18px; }
+.import-panel-head { align-items: flex-start; }
+.import-panel-head p { max-width: 820px; }
+.import-format-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  background: #fafbfc;
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #697386;
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.import-format-pill i { color: var(--gwc-green); font-size: 13px; }
+.meltwater-import-form { display: grid; gap: 14px; }
+.import-month-field { max-width: 300px; }
+.import-helper { margin-top: 5px; color: #8a93a1; font-size: 10px; }
+.import-file-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.import-file-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 82px;
+  border: 1px dashed #cfd5dd;
+  border-radius: 13px;
+  padding: 13px;
+  background: #fafbfc;
+  cursor: pointer;
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+.import-file-card:hover { border-color: #aeb7c3; background: #fff; }
+.import-file-card.has-file { border-style: solid; border-color: #bedbb7; background: #f8fcf7; box-shadow: inset 0 0 0 1px rgba(63,174,42,.03); }
+.import-platform-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: #fff;
+  color: #7d8795;
+  font-size: 17px;
+}
+.import-file-card.has-file .import-platform-icon { color: var(--gwc-green-dark); border-color: #d8e9d4; }
+.import-file-copy { min-width: 0; }
+.import-file-copy strong { display: block; color: var(--ink); font-size: 13px; font-weight: 750; }
+.import-file-copy small { display: block; margin-top: 3px; color: #7d8795; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.import-file-card.has-file .import-file-copy small { color: #4f6650; }
+.import-file-action { color: #657082; font-size: 10px; font-weight: 750; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 8px; }
+.import-actions { display: flex; justify-content: flex-end; gap: 9px; flex-wrap: wrap; padding-top: 2px; }
+.import-actions .btn { min-height: 42px; }
+.import-note {
+  margin-top: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 13px;
+  color: #717b8a;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.import-note i { color: var(--gwc-green); margin-top: 1px; }
+.import-preview { margin-top: 15px; border-top: 1px solid var(--line-soft); padding-top: 16px; }
+.import-preview-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.import-preview-head h3 { margin: 1px 0 2px; color: var(--ink); font-size: 18px; font-weight: 750; }
+.import-preview-head p { margin: 0; color: var(--muted); font-size: 10.5px; }
+.import-preview-summary { min-width: 130px; text-align: right; }
+.import-preview-summary strong { display: block; color: var(--ink); font-size: 11px; }
+.import-preview-summary span { display: block; margin-top: 2px; color: var(--muted); font-size: 9.5px; }
+.import-preview-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.import-preview-card { min-width: 0; border: 1px solid var(--line); border-radius: 13px; padding: 14px; background: #fff; }
+.import-preview-card.ready { border-color: #dbe9d8; }
+.import-preview-card.warning { border-color: #eadfca; }
+.import-preview-card.error { border-color: #ead4d4; }
+.import-preview-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 9px; margin-bottom: 12px; }
+.import-preview-title > div { min-width: 0; }
+.import-preview-title strong { display: block; margin-top: 3px; color: #667085; font-size: 9.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.import-platform-mini { color: var(--ink); font-size: 13px; font-weight: 760; }
+.import-status { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 7px; font-size: 8.5px; font-weight: 750; white-space: nowrap; }
+.import-status.ready { background: #edf7eb; color: #2d7a20; }
+.import-status.warning { background: #fff7e8; color: #8a681f; }
+.import-status.error { background: #fff0f0; color: #a14444; }
+.import-kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.import-kpi-grid > div { border: 1px solid var(--line-soft); background: #fafbfc; border-radius: 9px; padding: 8px; min-width: 0; }
+.import-kpi-grid span { display: block; color: #8992a0; font-size: 8.5px; line-height: 1.1; }
+.import-kpi-grid strong { display: block; margin-top: 4px; color: var(--ink); font-size: 14px; line-height: 1; font-weight: 760; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.import-derived-list { margin-top: 10px; border-top: 1px solid var(--line-soft); }
+.import-derived-list > div { display: grid; grid-template-columns: 108px minmax(0,1fr); gap: 9px; padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+.import-derived-list span { color: #8a93a1; font-size: 9px; }
+.import-derived-list strong { min-width: 0; color: #596475; font-size: 9px; font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.import-message-list { display: grid; gap: 6px; margin-top: 10px; border-radius: 9px; padding: 9px; }
+.import-message-list > div { display: flex; align-items: flex-start; gap: 7px; font-size: 9px; line-height: 1.35; }
+.import-message-list.errors { background: #fff5f5; color: #924747; }
+.import-message-list.warnings { background: #fffaf0; color: #796225; }
+.import-message-list i { margin-top: 1px; flex: 0 0 auto; }
+
+@media (max-width: 1220px) {
+  .import-file-grid, .import-preview-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .import-panel-head, .import-preview-head { flex-direction: column; }
+  .import-preview-summary { text-align: left; }
+  .import-month-field { max-width: none; }
+  .import-file-card { grid-template-columns: 40px minmax(0,1fr); }
+  .import-file-action { grid-column: 2; width: max-content; }
+  .import-actions { justify-content: stretch; }
+  .import-actions .btn { flex: 1 1 170px; }
+  .import-kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
