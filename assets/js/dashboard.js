@@ -3,7 +3,7 @@
 
   const api = window.GWC_SUPABASE;
   const supabase = api?.client || null;
-  const state = { reports: [], activeReportId: null, bundle: null, charts: {} };
+  const state = { reports: [], activeReportId: null, bundle: null, charts: {}, trendView: "chart", trendRange: "5", trendMetric: "impressions" };
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const fmt = new Intl.NumberFormat("en-GB");
@@ -33,6 +33,14 @@
     const [y, m] = dateString.split("-").map(Number);
     return new Intl.DateTimeFormat("en-GB", { month: "short", timeZone: "UTC" })
       .format(new Date(Date.UTC(y, m - 1, 1)));
+  }
+
+  function shortMonthYear(dateString) {
+    if (!dateString) return "—";
+    const [y, m] = dateString.split("-").map(Number);
+    const month = new Intl.DateTimeFormat("en-GB", { month: "short", timeZone: "UTC" })
+      .format(new Date(Date.UTC(y, m - 1, 1)));
+    return `${month} '${String(y).slice(-2)}`;
   }
 
   function previousMonthDate(dateString) {
@@ -268,7 +276,7 @@
       .select("id,report_month,status")
       .lte("report_month", report.report_month)
       .order("report_month", { ascending: false })
-      .limit(5);
+      .limit(14);
     if (!previewMode) trendQuery = trendQuery.eq("status", "published");
     const { data: trendReports, error: trendReportsError } = await trendQuery;
     if (trendReportsError) throw trendReportsError;
@@ -347,27 +355,99 @@
   }
 
   function buildTrend(bundle) {
-    const labels = bundle.trendReports.map(r => shortMonth(r.report_month));
     const byReport = {};
     bundle.trendMetrics.forEach(row => {
       byReport[row.report_id] ||= {};
       byReport[row.report_id][row.platform] = row;
     });
 
+    const periods = bundle.trendReports.map(report => ({
+      id: report.id,
+      reportMonth: report.report_month,
+      label: shortMonth(report.report_month),
+      labelWithYear: shortMonthYear(report.report_month),
+      platforms: byReport[report.id] || {}
+    }));
+
     const make = platform => ({
-      posts: bundle.trendReports.map(r => byReport[r.id]?.[platform]?.posts ?? null),
-      followers: bundle.trendReports.map(r => byReport[r.id]?.[platform]?.followers ?? null),
-      impressions: bundle.trendReports.map(r => byReport[r.id]?.[platform]?.impressions ?? null),
-      engagements: bundle.trendReports.map(r => byReport[r.id]?.[platform]?.engagements ?? null)
+      posts: periods.map(period => period.platforms[platform]?.posts ?? null),
+      followers: periods.map(period => period.platforms[platform]?.followers ?? null),
+      impressions: periods.map(period => period.platforms[platform]?.impressions ?? null),
+      engagements: periods.map(period => period.platforms[platform]?.engagements ?? null)
     });
 
     return {
-      labels,
-      label: labels.length ? `${labels[0]}–${labels[labels.length - 1]} trend` : "Trend",
+      periods,
+      labels: periods.map(period => period.label),
+      label: periods.length ? `${periods[0].label}–${periods[periods.length - 1].label} trend` : "Trend",
       linkedin: make("linkedin"),
       instagram: make("instagram"),
       x: make("x")
     };
+  }
+
+  function getTrendPeriods(trend, range = state.trendRange) {
+    const periods = trend?.periods || [];
+    if (!periods.length) return [];
+
+    if (range === "ytd") {
+      const latestYear = String(periods[periods.length - 1].reportMonth).slice(0, 4);
+      return periods.filter(period => String(period.reportMonth).startsWith(`${latestYear}-`));
+    }
+
+    const count = range === "12" ? 12 : range === "6" ? 6 : 5;
+    return periods.slice(-count);
+  }
+
+  function trendPeriodLabel(trend, range = state.trendRange) {
+    const visible = getTrendPeriods(trend, range);
+    if (!visible.length) return "No historical data";
+    const first = visible[0];
+    const last = visible[visible.length - 1];
+    if (first.reportMonth === last.reportMonth) return monthLabel(first.reportMonth);
+    return `${first.labelWithYear}–${last.labelWithYear}`;
+  }
+
+  function historicalTrendTableMarkup(trend, range = state.trendRange) {
+    const visible = getTrendPeriods(trend, range);
+    if (!visible.length) return '<div class="empty-inline">No historical data is available for this period.</div>';
+
+    const allByMonth = Object.fromEntries((trend.periods || []).map(period => [period.reportMonth, period]));
+    const metricRows = [
+      ["posts", "Posts"],
+      ["followers", "Followers"],
+      ["impressions", "Impressions"],
+      ["engagements", "Engagements"]
+    ];
+    const platformNames = { linkedin: "LinkedIn", instagram: "Instagram", x: "X" };
+
+    const head = visible.map(period => `<th scope="col"><span class="trend-month-label">${period.label}</span><span class="trend-year-label">${String(period.reportMonth).slice(0, 4)}</span></th>`).join("");
+    const body = platforms.map(platform => {
+      const platformHeader = `<tr class="historical-platform-row"><th colspan="${visible.length + 1}">${platformIcon(platform)}<span>${platformNames[platform]}</span></th></tr>`;
+      const rows = metricRows.map(([metric, label]) => {
+        const cells = visible.map(period => {
+          const current = period.platforms[platform]?.[metric] ?? null;
+          const previousPeriod = allByMonth[previousMonthDate(period.reportMonth)];
+          const previous = previousPeriod?.platforms?.[platform]?.[metric] ?? null;
+          const change = delta(current, previous);
+          const deltaText = change === null ? "—" : signedPercent(change);
+          const deltaState = change === null ? "neutral" : deltaClass(change);
+          const icon = change === null ? "bi-dash" : deltaIcon(change);
+          return `<td><div class="trend-cell-value">${number(current)}</div><span class="trend-delta ${deltaState}"><i class="bi ${icon}" aria-hidden="true"></i>${deltaText}</span></td>`;
+        }).join("");
+        return `<tr><th scope="row" class="historical-metric-label">${label}</th>${cells}</tr>`;
+      }).join("");
+      return platformHeader + rows;
+    }).join("");
+
+    return `
+      <div class="historical-trend-scroll">
+        <table class="historical-trend-table">
+          <thead><tr><th scope="col" class="historical-metric-head">Platform / Metric</th>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="panel-footnote">Each percentage compares that month with the immediately preceding calendar month. If the previous month is not available in Supabase, the comparison is shown as —.</div>`;
   }
 
   function buildModel(bundle) {
@@ -471,17 +551,37 @@
       </div>
 
       <div class="overview-main-grid">
-        <section class="panel">
-          <div class="panel-header">
-            <div><h3 class="panel-title">Performance trend</h3><div class="panel-subtitle">${month.trend.label}</div></div>
-            <select class="metric-switch" id="overviewMetric" aria-label="Select trend metric">
-              <option value="impressions">Impressions</option>
-              <option value="engagements">Engagements</option>
-              <option value="followers">Followers</option>
-              <option value="posts">Posts</option>
-            </select>
+        <section class="panel trend-panel">
+          <div class="panel-header trend-panel-header">
+            <div>
+              <h3 class="panel-title">Performance trend</h3>
+              <div class="panel-subtitle" id="trendPeriodLabel">${trendPeriodLabel(month.trend)}</div>
+            </div>
+            <div class="trend-controls">
+              <div class="trend-view-toggle" role="group" aria-label="Performance trend view">
+                <button class="trend-toggle-btn ${state.trendView === "chart" ? "active" : ""}" type="button" data-trend-view="chart" aria-pressed="${state.trendView === "chart"}"><i class="bi bi-graph-up" aria-hidden="true"></i>Chart</button>
+                <button class="trend-toggle-btn ${state.trendView === "table" ? "active" : ""}" type="button" data-trend-view="table" aria-pressed="${state.trendView === "table"}"><i class="bi bi-table" aria-hidden="true"></i>Trend table</button>
+              </div>
+              <select class="metric-switch trend-range-switch" id="trendRange" aria-label="Select trend period">
+                <option value="5" ${state.trendRange === "5" ? "selected" : ""}>Last 5 months</option>
+                <option value="6" ${state.trendRange === "6" ? "selected" : ""}>Last 6 months</option>
+                <option value="ytd" ${state.trendRange === "ytd" ? "selected" : ""}>Year to date</option>
+                <option value="12" ${state.trendRange === "12" ? "selected" : ""}>Last 12 months</option>
+              </select>
+              <select class="metric-switch ${state.trendView === "table" ? "trend-control-hidden" : ""}" id="overviewMetric" aria-label="Select trend metric">
+                <option value="impressions" ${state.trendMetric === "impressions" ? "selected" : ""}>Impressions</option>
+                <option value="engagements" ${state.trendMetric === "engagements" ? "selected" : ""}>Engagements</option>
+                <option value="followers" ${state.trendMetric === "followers" ? "selected" : ""}>Followers</option>
+                <option value="posts" ${state.trendMetric === "posts" ? "selected" : ""}>Posts</option>
+              </select>
+            </div>
           </div>
-          <div class="chart-wrap"><canvas id="overviewTrendChart" aria-label="Platform trend chart"></canvas></div>
+          <div id="trendChartView" class="trend-view-panel ${state.trendView === "chart" ? "" : "d-none"}">
+            <div class="chart-wrap"><canvas id="overviewTrendChart" aria-label="Platform trend chart"></canvas></div>
+          </div>
+          <div id="trendTableView" class="trend-view-panel ${state.trendView === "table" ? "" : "d-none"}">
+            <div id="historicalTrendTable">${historicalTrendTableMarkup(month.trend)}</div>
+          </div>
         </section>
 
         <section class="quick-stats-panel">
@@ -640,19 +740,24 @@
     }
   }
 
-  function buildOverviewTrend(month, metric) {
+  function buildOverviewTrend(month, metric = state.trendMetric) {
     destroyChart("overview");
     const canvas = $("#overviewTrendChart");
     if (!canvas || !window.Chart) return;
-    const t = month.trend;
+
+    state.trendMetric = metric;
+    const visible = getTrendPeriods(month.trend, state.trendRange);
+    const labels = visible.map(period => period.label);
+    const seriesFor = platform => visible.map(period => period.platforms[platform]?.[metric] ?? null);
+
     state.charts.overview = new Chart(canvas, {
       type: "line",
       data: {
-        labels: t.labels,
+        labels,
         datasets: [
-          { label: "LinkedIn", data: t.linkedin[metric], borderColor: "#111111", backgroundColor: "#111111", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
-          { label: "Instagram", data: t.instagram[metric], borderColor: "#777777", backgroundColor: "#777777", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
-          { label: "X", data: t.x[metric], borderColor: "#b7b7b7", backgroundColor: "#b7b7b7", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true }
+          { label: "LinkedIn", data: seriesFor("linkedin"), borderColor: "#111111", backgroundColor: "#111111", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
+          { label: "Instagram", data: seriesFor("instagram"), borderColor: "#777777", backgroundColor: "#777777", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
+          { label: "X", data: seriesFor("x"), borderColor: "#b7b7b7", backgroundColor: "#b7b7b7", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true }
         ]
       },
       options: {
@@ -663,6 +768,33 @@
         }
       }
     });
+  }
+
+  function updateTrendView(month) {
+    const chartView = $("#trendChartView");
+    const tableView = $("#trendTableView");
+    const metricSelect = $("#overviewMetric");
+    const label = $("#trendPeriodLabel");
+    const table = $("#historicalTrendTable");
+
+    if (label) label.textContent = trendPeriodLabel(month.trend, state.trendRange);
+    if (table) table.innerHTML = historicalTrendTableMarkup(month.trend, state.trendRange);
+
+    $$('[data-trend-view]').forEach(button => {
+      const active = button.dataset.trendView === state.trendView;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+
+    if (chartView) chartView.classList.toggle("d-none", state.trendView !== "chart");
+    if (tableView) tableView.classList.toggle("d-none", state.trendView !== "table");
+    if (metricSelect) metricSelect.classList.toggle("trend-control-hidden", state.trendView === "table");
+
+    if (state.trendView === "chart") {
+      buildOverviewTrend(month, state.trendMetric);
+    } else {
+      destroyChart("overview");
+    }
   }
 
   function buildCadence(key, p) {
@@ -678,7 +810,22 @@
 
   function wireDynamicControls(month) {
     const metric = $("#overviewMetric");
-    if (metric) metric.addEventListener("change", e => buildOverviewTrend(month, e.target.value));
+    if (metric) metric.addEventListener("change", e => {
+      state.trendMetric = e.target.value;
+      if (state.trendView === "chart") buildOverviewTrend(month, state.trendMetric);
+    });
+
+    const range = $("#trendRange");
+    if (range) range.addEventListener("change", e => {
+      state.trendRange = e.target.value;
+      updateTrendView(month);
+    });
+
+    $$('[data-trend-view]').forEach(button => button.addEventListener("click", () => {
+      state.trendView = button.dataset.trendView === "table" ? "table" : "chart";
+      updateTrendView(month);
+    }));
+
     $$('[data-open-platform]').forEach(btn => btn.addEventListener("click", () => {
       const tabButton = $(`#tab-${btn.dataset.openPlatform}`);
       if (tabButton) bootstrap.Tab.getOrCreateInstance(tabButton).show();
@@ -694,7 +841,7 @@
     $("#instagramContent").innerHTML = platformMarkup("instagram", month.platforms.instagram, month);
     $("#xContent").innerHTML = platformMarkup("x", month.platforms.x, month);
     $("#insightsContent").innerHTML = insightsMarkup(month);
-    buildOverviewTrend(month, "impressions");
+    if (state.trendView === "chart") buildOverviewTrend(month, state.trendMetric);
     buildCadence("linkedin", month.platforms.linkedin);
     buildCadence("instagram", month.platforms.instagram);
     buildCadence("x", month.platforms.x);
