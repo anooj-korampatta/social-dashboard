@@ -3,7 +3,7 @@
 
   const api = window.GWC_SUPABASE;
   const supabase = api?.client || null;
-  const state = { reports: [], activeReportId: null, bundle: null, charts: {}, trendView: "chart", trendRange: "5", trendMetric: "impressions" };
+  const state = { reports: [], activeReportId: null, bundle: null, charts: {}, chartRange: "5", trendRange: "5", trendMetric: "impressions" };
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const fmt = new Intl.NumberFormat("en-GB");
@@ -76,6 +76,22 @@
     return icons[key] || "";
   }
 
+  function platformBrandIcon(key) {
+    const icons = {
+      linkedin: '<span class="social-platform-icon linkedin" aria-hidden="true"><i class="bi bi-linkedin"></i></span>',
+      instagram: '<span class="social-platform-icon instagram" aria-hidden="true"><i class="bi bi-instagram"></i></span>',
+      x: '<span class="social-platform-icon x" aria-hidden="true"><i class="bi bi-twitter-x"></i></span>'
+    };
+    return icons[key] || "";
+  }
+
+  function signedNumber(value) {
+    if (value === null || value === undefined || value === "") return "—";
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "—";
+    return `${n > 0 ? "+" : ""}${number(n)}`;
+  }
+
   function showMessage(message, type = "info") {
     const el = $("#systemMessage");
     if (!el) return;
@@ -106,6 +122,33 @@
     const currentKeys = platforms.filter(p => currentMap[p]?.reach !== null && currentMap[p]?.reach !== undefined);
     const previousKeys = platforms.filter(p => previousMap[p]?.reach !== null && previousMap[p]?.reach !== undefined);
     return currentKeys.length > 0 && currentKeys.join("|") === previousKeys.join("|");
+  }
+
+  function comparableReachComparison(currentMap, previousMap) {
+    const comparable = platforms.filter(platform => {
+      const current = currentMap[platform]?.reach;
+      const previous = previousMap[platform]?.reach;
+      return current !== null && current !== undefined && previous !== null && previous !== undefined;
+    });
+
+    if (!comparable.length) {
+      return { previous: null, delta: null, note: "No comparable reach data", comparablePlatforms: [] };
+    }
+
+    const currentComparable = comparable.reduce((sum, platform) => sum + Number(currentMap[platform].reach), 0);
+    const previousComparable = comparable.reduce((sum, platform) => sum + Number(previousMap[platform].reach), 0);
+    const currentReported = platforms.filter(platform => currentMap[platform]?.reach !== null && currentMap[platform]?.reach !== undefined);
+    const previousReported = platforms.filter(platform => previousMap[platform]?.reach !== null && previousMap[platform]?.reach !== undefined);
+    const isPartial = comparable.length !== currentReported.length || comparable.length !== previousReported.length;
+    const names = { linkedin: "LinkedIn", instagram: "Instagram", x: "X" };
+
+    return {
+      previous: previousComparable,
+      delta: delta(currentComparable, previousComparable),
+      note: isPartial ? `MoM based on ${comparable.map(p => names[p]).join(" + ")} only` : "",
+      previousLabel: isPartial ? "Comparable previous" : "Previous",
+      comparablePlatforms: comparable
+    };
   }
 
   function buildOverview(metricsMap, previousMetricsMap, priorPreviousMetricsMap) {
@@ -140,7 +183,7 @@
     return { previous, delta: delta(current, previous), note };
   }
 
-  function metricCard({ value, label, comparison, valuePrefix = "", valueSuffix = "", icon = "bi-bar-chart" }) {
+  function metricCard({ value, label, comparison, valuePrefix = "", valueSuffix = "", icon = "bi-bar-chart", breakdown = null, comparisonLabel = "previous month" }) {
     const display = value === null || value === undefined ? "—" : `${valuePrefix}${number(value)}${valueSuffix}`;
     let comparisonHtml = '<div class="metric-comparison neutral"><span>No previous-month comparison</span></div>';
 
@@ -149,28 +192,48 @@
         comparisonHtml = `
           <div class="metric-comparison ${deltaClass(comparison.delta)}">
             <span class="delta-value"><i class="bi ${deltaIcon(comparison.delta)}" aria-hidden="true"></i>${signedPercent(comparison.delta)}</span>
-            <span>from last month</span>
+            <span>vs ${comparisonLabel}</span>
           </div>`;
       } else if (comparison.note) {
         comparisonHtml = `<div class="metric-comparison neutral"><span>${comparison.note}</span></div>`;
       }
     }
 
+    const previousLabel = comparison?.previousLabel || "Previous";
     const previousHtml = comparison && comparison.previous !== null && comparison.previous !== undefined
-      ? `<div class="metric-previous">Previous: ${valuePrefix}${number(comparison.previous)}${valueSuffix}</div>`
+      ? `<div class="metric-previous">${previousLabel}: ${valuePrefix}${number(comparison.previous)}${valueSuffix}</div>`
       : '<div class="metric-previous">Previous value unavailable</div>';
-    const trendClass = comparison?.delta < 0 ? "negative" : "";
+    const trendGlyph = comparison?.delta < 0 ? "bi-graph-down-arrow" : "bi-graph-up-arrow";
+    const trendClass = comparison?.delta < 0 ? "negative" : comparison?.delta > 0 ? "positive" : "neutral";
+
+    const breakdownHtml = Array.isArray(breakdown) && breakdown.length
+      ? `<div class="metric-breakdown">${breakdown.map(item => {
+          const valueText = item.unavailable
+            ? '<span class="breakdown-unavailable">— <small>Not reported</small></span>'
+            : item.signed ? signedNumber(item.value) : number(item.value);
+          return `<div class="metric-breakdown-row">
+            <div class="metric-breakdown-platform">${platformBrandIcon(item.key)}<span>${item.label}</span></div>
+            <strong>${valueText}</strong>
+          </div>`;
+        }).join("")}</div>`
+      : "";
+
+    const comparisonNote = comparison?.delta !== null && comparison?.delta !== undefined && comparison?.note
+      ? `<div class="metric-comparison-note">${comparison.note}</div>`
+      : "";
 
     return `
-      <article class="metric-card">
+      <article class="metric-card ${breakdownHtml ? "executive-metric-card" : ""}">
         <div class="metric-card-top">
           <span class="metric-icon"><i class="bi ${icon}" aria-hidden="true"></i></span>
-          <i class="bi bi-graph-up-arrow metric-trend-icon ${trendClass}" aria-hidden="true"></i>
+          <i class="bi ${trendGlyph} metric-trend-icon ${trendClass}" aria-hidden="true"></i>
         </div>
         <div class="metric-label">${label}</div>
         <div class="metric-value">${display}</div>
         ${comparisonHtml}
+        ${comparisonNote}
         ${previousHtml}
+        ${breakdownHtml}
       </article>`;
   }
 
@@ -423,7 +486,7 @@
 
     const head = visible.map(period => `<th scope="col"><span class="trend-month-label">${period.label}</span><span class="trend-year-label">${String(period.reportMonth).slice(0, 4)}</span></th>`).join("");
     const body = platforms.map(platform => {
-      const platformHeader = `<tr class="historical-platform-row"><th colspan="${visible.length + 1}">${platformIcon(platform)}<span>${platformNames[platform]}</span></th></tr>`;
+      const platformHeader = `<tr class="historical-platform-row"><th colspan="${visible.length + 1}">${platformBrandIcon(platform)}<span>${platformNames[platform]}</span></th></tr>`;
       const rows = metricRows.map(([metric, label]) => {
         const cells = visible.map(period => {
           const current = period.platforms[platform]?.[metric] ?? null;
@@ -469,9 +532,7 @@
           followers: comparisonObject(current.followers, previous.followers),
           newFollowers: comparisonObject(current.newFollowers, previous.newFollowers),
           impressions: comparisonObject(current.impressions, previous.impressions),
-          reach: overview.reachIsComparable
-            ? comparisonObject(current.reach, previous.reach)
-            : comparisonObject(current.reach, previous.reach, "Not like-for-like"),
+          reach: comparableReachComparison(currentMap, prevMap),
           engagements: comparisonObject(current.engagements, previous.engagements)
         }
       },
@@ -530,45 +591,51 @@
   function overviewMarkup(month) {
     const o = month.overview;
     const c = month.comparison.overview;
-    const reachPct = o.impressions ? Math.min(100, Math.round((Number(o.reach || 0) / Number(o.impressions)) * 100)) : 0;
-    const followerGrowth = c.followers?.delta == null ? 0 : Math.min(100, Math.max(0, Math.round(Math.abs(c.followers.delta) * 10)));
-    const postMomentum = c.posts?.delta == null ? 0 : Math.min(100, Math.max(0, Math.round(Math.abs(c.posts.delta))));
+    const p = month.platforms;
+    const previousShort = month.previousLabel.replace(/\s+\d{4}$/, "");
+
+    const split = (metric, signed = false) => [
+      { key: "linkedin", label: "LinkedIn", value: p.linkedin?.[metric], signed, unavailable: p.linkedin?.[metric] === null || p.linkedin?.[metric] === undefined },
+      { key: "instagram", label: "Instagram", value: p.instagram?.[metric], signed, unavailable: p.instagram?.[metric] === null || p.instagram?.[metric] === undefined },
+      { key: "x", label: "X", value: p.x?.[metric], signed, unavailable: p.x?.[metric] === null || p.x?.[metric] === undefined }
+    ];
 
     return `
-      <div class="section-intro">
+      <div class="section-intro executive-overview-heading">
         <div>
           <div class="section-kicker">Performance overview</div>
-          <h2 class="section-title">At a glance</h2>
+          <h2 class="section-title executive-title">At a glance</h2>
+          <div class="overview-lead">Organic social performance across LinkedIn, Instagram and X</div>
         </div>
-        <div class="comparison-badge"><span class="comparison-dot"></span>${month.label} vs ${month.previousLabel}</div>
+        <div class="comparison-badge executive-comparison"><span class="comparison-dot"></span>${month.label} vs ${month.previousLabel}</div>
       </div>
 
-      <div class="metric-grid overview-metrics">
-        ${metricCard({ value: o.posts, label: "Posts published", comparison: c.posts, icon: "bi-file-earmark-text" })}
-        ${metricCard({ value: o.followers, label: "Followers", comparison: c.followers, icon: "bi-people" })}
-        ${metricCard({ value: o.impressions, label: "Impressions", comparison: c.impressions, icon: "bi-eye" })}
-        ${metricCard({ value: o.engagements, label: "Engagements", comparison: c.engagements, icon: "bi-hand-thumbs-up" })}
+      <div class="metric-grid overview-metrics executive-metrics">
+        ${metricCard({ value: o.posts, label: "Posts published", comparison: c.posts, comparisonLabel: previousShort, icon: "bi-file-earmark-text", breakdown: split("posts") })}
+        ${metricCard({ value: o.followers, label: "Followers", comparison: c.followers, comparisonLabel: previousShort, icon: "bi-people", breakdown: split("followers") })}
+        ${metricCard({ value: o.newFollowers, label: "Net new followers", comparison: c.newFollowers, comparisonLabel: previousShort, valuePrefix: o.newFollowers !== null && o.newFollowers >= 0 ? "+" : "", icon: "bi-person-plus", breakdown: split("newFollowers", true) })}
+        ${metricCard({ value: o.impressions, label: "Impressions", comparison: c.impressions, comparisonLabel: previousShort, icon: "bi-eye", breakdown: split("impressions") })}
+        ${metricCard({ value: o.reach, label: "Reach", comparison: c.reach, comparisonLabel: previousShort, icon: "bi-broadcast", breakdown: split("reach") })}
+        ${metricCard({ value: o.engagements, label: "Engagements", comparison: c.engagements, comparisonLabel: previousShort, icon: "bi-hand-thumbs-up", breakdown: split("engagements") })}
       </div>
 
-      <div class="overview-main-grid">
-        <section class="panel trend-panel">
-          <div class="panel-header trend-panel-header">
+      <div class="overview-method-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span><strong>Reach methodology:</strong> Reach combines LinkedIn Members Reached and Instagram Accounts Reached. Meltwater does not report reach for X. Month-on-month reach comparisons use only platforms with comparable reach data available in both periods.</span></div>
+
+      <div class="performance-grid">
+        <section class="panel performance-chart-panel">
+          <div class="panel-header performance-panel-header">
             <div>
-              <h3 class="panel-title">Performance trend</h3>
-              <div class="panel-subtitle" id="trendPeriodLabel">${trendPeriodLabel(month.trend)}</div>
+              <h3 class="panel-title">Performance chart</h3>
+              <div class="panel-subtitle" id="chartPeriodLabel">${trendPeriodLabel(month.trend, state.chartRange)}</div>
             </div>
-            <div class="trend-controls">
-              <div class="trend-view-toggle" role="group" aria-label="Performance trend view">
-                <button class="trend-toggle-btn ${state.trendView === "chart" ? "active" : ""}" type="button" data-trend-view="chart" aria-pressed="${state.trendView === "chart"}"><i class="bi bi-graph-up" aria-hidden="true"></i>Chart</button>
-                <button class="trend-toggle-btn ${state.trendView === "table" ? "active" : ""}" type="button" data-trend-view="table" aria-pressed="${state.trendView === "table"}"><i class="bi bi-table" aria-hidden="true"></i>Trend table</button>
-              </div>
-              <select class="metric-switch trend-range-switch" id="trendRange" aria-label="Select trend period">
-                <option value="5" ${state.trendRange === "5" ? "selected" : ""}>Last 5 months</option>
-                <option value="6" ${state.trendRange === "6" ? "selected" : ""}>Last 6 months</option>
-                <option value="ytd" ${state.trendRange === "ytd" ? "selected" : ""}>Year to date</option>
-                <option value="12" ${state.trendRange === "12" ? "selected" : ""}>Last 12 months</option>
+            <div class="performance-controls">
+              <select class="metric-switch" id="chartRange" aria-label="Select chart period">
+                <option value="5" ${state.chartRange === "5" ? "selected" : ""}>Last 5 months</option>
+                <option value="6" ${state.chartRange === "6" ? "selected" : ""}>Last 6 months</option>
+                <option value="ytd" ${state.chartRange === "ytd" ? "selected" : ""}>Year to date</option>
+                <option value="12" ${state.chartRange === "12" ? "selected" : ""}>Last 12 months</option>
               </select>
-              <select class="metric-switch ${state.trendView === "table" ? "trend-control-hidden" : ""}" id="overviewMetric" aria-label="Select trend metric">
+              <select class="metric-switch" id="overviewMetric" aria-label="Select chart metric">
                 <option value="impressions" ${state.trendMetric === "impressions" ? "selected" : ""}>Impressions</option>
                 <option value="engagements" ${state.trendMetric === "engagements" ? "selected" : ""}>Engagements</option>
                 <option value="followers" ${state.trendMetric === "followers" ? "selected" : ""}>Followers</option>
@@ -576,33 +643,23 @@
               </select>
             </div>
           </div>
-          <div id="trendChartView" class="trend-view-panel ${state.trendView === "chart" ? "" : "d-none"}">
-            <div class="chart-wrap"><canvas id="overviewTrendChart" aria-label="Platform trend chart"></canvas></div>
-          </div>
-          <div id="trendTableView" class="trend-view-panel ${state.trendView === "table" ? "" : "d-none"}">
-            <div id="historicalTrendTable">${historicalTrendTableMarkup(month.trend)}</div>
-          </div>
+          <div class="chart-wrap executive-chart"><canvas id="overviewTrendChart" aria-label="Platform performance chart"></canvas></div>
         </section>
 
-        <section class="quick-stats-panel">
-          <div class="panel-header"><div><h3 class="panel-title">Quick stats</h3><div class="panel-subtitle">Additional monthly indicators</div></div></div>
-          <div class="quick-stats-list">
-            <div class="quick-stat">
-              <div class="quick-stat-head"><span class="quick-stat-label">Reach</span><span class="quick-stat-value">${number(o.reach)}</span></div>
-              <div class="quick-stat-track"><div class="quick-stat-fill" style="width:${reachPct}%"></div></div>
-              <div class="quick-stat-meta">${c.reach?.delta == null ? (c.reach?.note || "Comparison unavailable") : `${signedPercent(c.reach.delta)} vs previous month`}</div>
+        <section class="panel monthly-trend-panel">
+          <div class="panel-header performance-panel-header">
+            <div>
+              <h3 class="panel-title">Monthly trend</h3>
+              <div class="panel-subtitle" id="trendPeriodLabel">${trendPeriodLabel(month.trend, state.trendRange)}</div>
             </div>
-            <div class="quick-stat">
-              <div class="quick-stat-head"><span class="quick-stat-label">Net new followers</span><span class="quick-stat-value">${o.newFollowers == null ? "—" : `${o.newFollowers >= 0 ? "+" : ""}${number(o.newFollowers)}`}</span></div>
-              <div class="quick-stat-track"><div class="quick-stat-fill neutral" style="width:${followerGrowth}%"></div></div>
-              <div class="quick-stat-meta">Calculated from month-end follower totals</div>
-            </div>
-            <div class="quick-stat">
-              <div class="quick-stat-head"><span class="quick-stat-label">Publishing momentum</span><span class="quick-stat-value">${signedPercent(c.posts?.delta)}</span></div>
-              <div class="quick-stat-track"><div class="quick-stat-fill" style="width:${postMomentum}%"></div></div>
-              <div class="quick-stat-meta">Posts compared with ${month.previousLabel}</div>
-            </div>
+            <select class="metric-switch trend-range-switch" id="trendRange" aria-label="Select monthly trend period">
+              <option value="5" ${state.trendRange === "5" ? "selected" : ""}>Last 5 months</option>
+              <option value="6" ${state.trendRange === "6" ? "selected" : ""}>Last 6 months</option>
+              <option value="ytd" ${state.trendRange === "ytd" ? "selected" : ""}>Year to date</option>
+              <option value="12" ${state.trendRange === "12" ? "selected" : ""}>Last 12 months</option>
+            </select>
           </div>
+          <div id="historicalTrendTable">${historicalTrendTableMarkup(month.trend, state.trendRange)}</div>
         </section>
       </div>
 
@@ -746,7 +803,7 @@
     if (!canvas || !window.Chart) return;
 
     state.trendMetric = metric;
-    const visible = getTrendPeriods(month.trend, state.trendRange);
+    const visible = getTrendPeriods(month.trend, state.chartRange);
     const labels = visible.map(period => period.label);
     const seriesFor = platform => visible.map(period => period.platforms[platform]?.[metric] ?? null);
 
@@ -755,9 +812,9 @@
       data: {
         labels,
         datasets: [
-          { label: "LinkedIn", data: seriesFor("linkedin"), borderColor: "#111111", backgroundColor: "#111111", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
-          { label: "Instagram", data: seriesFor("instagram"), borderColor: "#777777", backgroundColor: "#777777", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
-          { label: "X", data: seriesFor("x"), borderColor: "#b7b7b7", backgroundColor: "#b7b7b7", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true }
+          { label: "LinkedIn", data: seriesFor("linkedin"), borderColor: "#0A66C2", backgroundColor: "#0A66C2", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
+          { label: "Instagram", data: seriesFor("instagram"), borderColor: "#E1306C", backgroundColor: "#E1306C", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true },
+          { label: "X", data: seriesFor("x"), borderColor: "#111111", backgroundColor: "#111111", borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.32, spanGaps: true }
         ]
       },
       options: {
@@ -770,31 +827,17 @@
     });
   }
 
-  function updateTrendView(month) {
-    const chartView = $("#trendChartView");
-    const tableView = $("#trendTableView");
-    const metricSelect = $("#overviewMetric");
+  function updateTrendTable(month) {
     const label = $("#trendPeriodLabel");
     const table = $("#historicalTrendTable");
-
     if (label) label.textContent = trendPeriodLabel(month.trend, state.trendRange);
     if (table) table.innerHTML = historicalTrendTableMarkup(month.trend, state.trendRange);
+  }
 
-    $$('[data-trend-view]').forEach(button => {
-      const active = button.dataset.trendView === state.trendView;
-      button.classList.toggle("active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-
-    if (chartView) chartView.classList.toggle("d-none", state.trendView !== "chart");
-    if (tableView) tableView.classList.toggle("d-none", state.trendView !== "table");
-    if (metricSelect) metricSelect.classList.toggle("trend-control-hidden", state.trendView === "table");
-
-    if (state.trendView === "chart") {
-      buildOverviewTrend(month, state.trendMetric);
-    } else {
-      destroyChart("overview");
-    }
+  function updateChartPeriod(month) {
+    const label = $("#chartPeriodLabel");
+    if (label) label.textContent = trendPeriodLabel(month.trend, state.chartRange);
+    buildOverviewTrend(month, state.trendMetric);
   }
 
   function buildCadence(key, p) {
@@ -812,19 +855,20 @@
     const metric = $("#overviewMetric");
     if (metric) metric.addEventListener("change", e => {
       state.trendMetric = e.target.value;
-      if (state.trendView === "chart") buildOverviewTrend(month, state.trendMetric);
+      buildOverviewTrend(month, state.trendMetric);
     });
 
-    const range = $("#trendRange");
-    if (range) range.addEventListener("change", e => {
+    const chartRange = $("#chartRange");
+    if (chartRange) chartRange.addEventListener("change", e => {
+      state.chartRange = e.target.value;
+      updateChartPeriod(month);
+    });
+
+    const trendRange = $("#trendRange");
+    if (trendRange) trendRange.addEventListener("change", e => {
       state.trendRange = e.target.value;
-      updateTrendView(month);
+      updateTrendTable(month);
     });
-
-    $$('[data-trend-view]').forEach(button => button.addEventListener("click", () => {
-      state.trendView = button.dataset.trendView === "table" ? "table" : "chart";
-      updateTrendView(month);
-    }));
 
     $$('[data-open-platform]').forEach(btn => btn.addEventListener("click", () => {
       const tabButton = $(`#tab-${btn.dataset.openPlatform}`);
@@ -841,7 +885,7 @@
     $("#instagramContent").innerHTML = platformMarkup("instagram", month.platforms.instagram, month);
     $("#xContent").innerHTML = platformMarkup("x", month.platforms.x, month);
     $("#insightsContent").innerHTML = insightsMarkup(month);
-    if (state.trendView === "chart") buildOverviewTrend(month, state.trendMetric);
+    buildOverviewTrend(month, state.trendMetric);
     buildCadence("linkedin", month.platforms.linkedin);
     buildCadence("instagram", month.platforms.instagram);
     buildCadence("x", month.platforms.x);
