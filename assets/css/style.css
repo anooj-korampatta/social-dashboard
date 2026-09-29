@@ -715,3 +715,42 @@ button, select, input, textarea { font: inherit; }
   .performance-controls .metric-switch { flex: 1 1 140px; }
   .executive-overview-heading { align-items: flex-start; }
 }
+
+/* Full-width performance sections: chart first, monthly trend second */
+.performance-grid {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.performance-chart-panel,
+.monthly-trend-panel {
+  width: 100%;
+}
+
+.monthly-trend-panel .historical-trend-scroll {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.monthly-trend-panel .historical-trend-table {
+  width: 100%;
+  min-width: 860px;
+}
+
+.monthly-trend-panel .historical-trend-table th,
+.monthly-trend-panel .historical-trend-table td {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.monthly-trend-panel .historical-trend-table th:first-child,
+.monthly-trend-panel .historical-trend-table td:first-child {
+  min-width: 180px;
+}
+
+@media (min-width: 1200px) {
+  .monthly-trend-panel .historical-trend-table {
+    min-width: 100%;
+  }
+}
