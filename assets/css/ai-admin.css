@@ -1,0 +1,76 @@
+.ai-settings-panel { margin-top: 22px; }
+.ai-settings-head { align-items: center; }
+.ai-settings-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #3fae2a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.ai-feature-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e3e6ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #737b8c;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ai-feature-status > span { width: 8px; height: 8px; border-radius: 50%; background: #a9afb9; }
+.ai-feature-status.enabled { color: #237b16; border-color: #d9ead5; background: #f7fbf6; }
+.ai-feature-status.enabled > span { background: #3fae2a; }
+.ai-settings-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 22px 0;
+  border-top: 1px solid #eef0f2;
+  border-bottom: 1px solid #eef0f2;
+}
+.ai-setting-copy { display: grid; gap: 5px; max-width: 760px; }
+.ai-setting-copy strong { color: #151b2b; font-size: 15px; }
+.ai-setting-copy span { color: #727b8e; font-size: 13px; line-height: 1.5; }
+.ai-toggle { position: relative; flex: 0 0 auto; cursor: pointer; }
+.ai-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.ai-toggle-track {
+  display: block;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #d9dde3;
+  transition: background .2s ease;
+}
+.ai-toggle-thumb {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(18,24,40,.16);
+  transition: transform .2s ease;
+}
+.ai-toggle input:checked + .ai-toggle-track { background: #3fae2a; }
+.ai-toggle input:checked + .ai-toggle-track .ai-toggle-thumb { transform: translateX(22px); }
+.ai-toggle input:focus-visible + .ai-toggle-track { outline: 3px solid rgba(63,174,42,.18); outline-offset: 3px; }
+.ai-toggle input:disabled + .ai-toggle-track { opacity: .55; cursor: not-allowed; }
+.ai-settings-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 18px;
+}
+.ai-settings-note { display: flex; align-items: flex-start; gap: 9px; color: #7d8595; font-size: 12px; line-height: 1.45; }
+.ai-settings-note i { color: #3fae2a; margin-top: 1px; }
+@media (max-width: 700px) {
+  .ai-settings-body, .ai-settings-footer { align-items: flex-start; flex-direction: column; }
+}
