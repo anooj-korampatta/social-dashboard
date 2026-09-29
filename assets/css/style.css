@@ -377,6 +377,141 @@ button, select, input, textarea { font: inherit; }
 .footer-note { color: #9aa1ad; font-size: 10px; margin-top: 18px; padding: 0 2px 8px; }
 .sidebar-scrim { display: none; }
 
+
+/* Performance trend chart/table switch */
+.trend-panel { overflow: hidden; }
+.trend-panel-header { align-items: center; }
+.trend-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.trend-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7f8fa;
+}
+.trend-toggle-btn {
+  min-height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #7b8495;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.trend-toggle-btn:hover { color: var(--ink); }
+.trend-toggle-btn.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(16,24,40,.08);
+}
+.trend-toggle-btn.active i { color: var(--gwc-green); }
+.trend-range-switch { min-width: 132px; }
+.trend-control-hidden { display: none !important; }
+.trend-view-panel { min-width: 0; }
+
+.historical-trend-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: #d4d8df transparent;
+}
+.historical-trend-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  color: var(--text);
+  font-size: 11px;
+}
+.historical-trend-table th,
+.historical-trend-table td {
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 7px 8px;
+  text-align: center;
+  vertical-align: middle;
+  background: #fff;
+}
+.historical-trend-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  color: #6b7484;
+  background: #f8f9fb;
+  font-size: 10px;
+  font-weight: 750;
+}
+.historical-trend-table tr > *:first-child { border-left: 1px solid var(--line-soft); }
+.historical-trend-table thead tr:first-child > * { border-top: 1px solid var(--line-soft); }
+.historical-trend-table thead th:first-child { border-top-left-radius: 9px; }
+.historical-trend-table thead th:last-child { border-top-right-radius: 9px; }
+.historical-metric-head {
+  width: 132px;
+  text-align: left !important;
+}
+.trend-month-label { display: block; color: var(--ink); font-size: 11px; }
+.trend-year-label { display: block; color: #9aa1ad; font-size: 8px; font-weight: 650; margin-top: 1px; }
+.historical-platform-row th {
+  padding: 7px 10px;
+  text-align: left;
+  background: #f4f5f7;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+.historical-platform-row th .platform-icon {
+  width: 18px;
+  margin-right: 6px;
+  color: #7d8695;
+}
+.historical-metric-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left !important;
+  color: #525c6d;
+  background: #fff !important;
+  font-weight: 650;
+}
+.trend-cell-value {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.05;
+  font-weight: 700;
+}
+.trend-delta {
+  width: fit-content;
+  min-width: 54px;
+  min-height: 18px;
+  margin: 4px auto 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 6px;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 750;
+}
+.trend-delta.positive { color: #24823b; background: #edf7ec; }
+.trend-delta.negative { color: #8e4b4b; background: #fbefef; }
+.trend-delta.neutral { color: #7e8796; background: #f1f2f4; }
+
 @media (max-width: 1350px) {
   .metric-grid.platform-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metric-card { min-height: 160px; }
@@ -388,6 +523,8 @@ button, select, input, textarea { font: inherit; }
   .overview-main-grid, .panel-grid, .panel-grid.equal { grid-template-columns: 1fr; }
   .chart-wrap { height: 280px; }
   .chart-wrap.compact { height: 205px; }
+  .trend-panel-header { align-items: flex-start; flex-direction: column; }
+  .trend-controls { width: 100%; justify-content: flex-start; }
 }
 
 @media (max-width: 900px) {
@@ -418,6 +555,10 @@ button, select, input, textarea { font: inherit; }
 
 @media (max-width: 680px) {
   .app-topbar { flex-direction: column; }
+  .trend-controls { display: grid; grid-template-columns: 1fr 1fr; }
+  .trend-view-toggle { grid-column: 1 / -1; }
+  .trend-toggle-btn { flex: 1 1 50%; justify-content: center; }
+  .trend-range-switch, #overviewMetric { width: 100%; min-width: 0; }
   .header-actions { width: 100%; justify-content: stretch; }
   .month-select { flex: 1 1 150px; min-width: 0; }
   .btn-download { flex: 1 1 170px; }
