@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="auth-check-pending">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/ai-search.css">
+  <style>html.auth-check-pending body{visibility:hidden}</style>
 </head>
 <body class="app-body">
   <div class="app-layout" id="appLayout">
@@ -46,7 +47,17 @@
 
       <div class="sidebar-section-label">Management</div>
       <div class="sidebar-nav sidebar-secondary">
-        <a class="sidebar-link" href="admin/login.html"><i class="bi bi-shield-lock"></i><span>Admin CMS</span></a>
+        <a class="sidebar-link d-none" data-admin-only href="admin/index.html"><i class="bi bi-shield-lock"></i><span>Admin CMS</span></a>
+      </div>
+
+      <div class="sidebar-section-label">Account</div>
+      <div class="sidebar-nav sidebar-secondary">
+        <div class="sidebar-link" aria-label="Signed in account" title="Signed in account">
+          <i class="bi bi-person-circle"></i><span data-viewer-email>Signed in</span>
+        </div>
+        <button class="sidebar-link" type="button" data-viewer-signout>
+          <i class="bi bi-box-arrow-right"></i><span>Sign out</span>
+        </button>
       </div>
 
       <button class="sidebar-collapse" id="sidebarToggle" type="button" aria-label="Collapse sidebar">
@@ -68,7 +79,7 @@
         <div class="header-actions">
           <label class="visually-hidden" for="monthSelect">Month</label>
           <select id="monthSelect" class="form-select month-select" aria-label="Select reporting month" disabled><option>Loading…</option></select>
-          <a class="icon-btn" href="admin/login.html" aria-label="Open Admin CMS" title="Admin CMS"><i class="bi bi-person"></i></a>
+          <a class="icon-btn d-none" data-admin-only href="admin/index.html" aria-label="Open Admin CMS" title="Admin CMS"><i class="bi bi-shield-lock"></i></a>
           <button id="downloadPdfBtn" class="btn btn-download" type="button" disabled><i class="bi bi-download me-2" aria-hidden="true"></i>Download PDF</button>
         </div>
       </header>
@@ -121,6 +132,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/viewer-auth-guard.js"></script>
   <script src="assets/js/ui-shell.js"></script>
   <script src="assets/js/dashboard.js"></script>
   <script src="assets/js/ai-search.js"></script>
