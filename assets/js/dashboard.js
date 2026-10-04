@@ -206,16 +206,28 @@
     const trendGlyph = comparison?.delta < 0 ? "bi-graph-down-arrow" : "bi-graph-up-arrow";
     const trendClass = comparison?.delta < 0 ? "negative" : comparison?.delta > 0 ? "positive" : "neutral";
 
+    const breakdownKey = String(label || "metric")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const breakdownId = `metric-breakdown-${breakdownKey}`;
     const breakdownHtml = Array.isArray(breakdown) && breakdown.length
-      ? `<div class="metric-breakdown">${breakdown.map(item => {
-          const valueText = item.unavailable
-            ? '<span class="breakdown-unavailable">— <small>Not reported</small></span>'
-            : item.signed ? signedNumber(item.value) : number(item.value);
-          return `<div class="metric-breakdown-row">
-            <div class="metric-breakdown-platform">${platformBrandIcon(item.key)}<span>${item.label}</span></div>
-            <strong>${valueText}</strong>
-          </div>`;
-        }).join("")}</div>`
+      ? `<div class="metric-breakdown-collapse" id="${breakdownId}" aria-hidden="true">
+          <div class="metric-breakdown">${breakdown.map(item => {
+            const valueText = item.unavailable
+              ? '<span class="breakdown-unavailable">— <small>Not reported</small></span>'
+              : item.signed ? signedNumber(item.value) : number(item.value);
+            return `<div class="metric-breakdown-row">
+              <div class="metric-breakdown-platform">${platformBrandIcon(item.key)}<span>${item.label}</span></div>
+              <strong>${valueText}</strong>
+            </div>`;
+          }).join("")}</div>
+        </div>`
+      : "";
+    const breakdownToggle = breakdownHtml
+      ? `<button class="metric-breakdown-toggle" type="button" data-metric-breakdown-toggle aria-expanded="false" aria-controls="${breakdownId}" aria-label="Show ${label} channel breakdown" title="Show channel breakdown">
+          <i class="bi bi-chevron-down" aria-hidden="true"></i>
+        </button>`
       : "";
 
     const comparisonNote = comparison?.delta !== null && comparison?.delta !== undefined && comparison?.note
@@ -234,6 +246,7 @@
         ${comparisonNote}
         ${previousHtml}
         ${breakdownHtml}
+        ${breakdownToggle}
       </article>`;
   }
 
@@ -873,6 +886,19 @@
     $$('[data-open-platform]').forEach(btn => btn.addEventListener("click", () => {
       const tabButton = $(`#tab-${btn.dataset.openPlatform}`);
       if (tabButton) bootstrap.Tab.getOrCreateInstance(tabButton).show();
+    }));
+
+    $$('[data-metric-breakdown-toggle]').forEach(btn => btn.addEventListener("click", () => {
+      const card = btn.closest(".executive-metric-card");
+      const panelId = btn.getAttribute("aria-controls");
+      const panel = panelId ? document.getElementById(panelId) : null;
+      if (!card || !panel) return;
+
+      const isOpen = card.classList.toggle("is-breakdown-open");
+      btn.setAttribute("aria-expanded", String(isOpen));
+      btn.setAttribute("aria-label", `${isOpen ? "Hide" : "Show"} channel breakdown`);
+      btn.setAttribute("title", `${isOpen ? "Hide" : "Show"} channel breakdown`);
+      panel.setAttribute("aria-hidden", String(!isOpen));
     }));
   }
 
