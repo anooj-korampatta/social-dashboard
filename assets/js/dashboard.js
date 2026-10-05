@@ -1,3 +1,4 @@
+// GWC dashboard merged patch: Insights platform logos + X reach handling + existing overview enhancements. Build 2026-10-05
 (() => {
   "use strict";
 
@@ -83,6 +84,29 @@
       x: '<span class="social-platform-icon x" aria-hidden="true"><i class="bi bi-twitter-x"></i></span>'
     };
     return icons[key] || "";
+  }
+
+  function normalizePlatformKey(value) {
+    const key = String(value || "").trim().toLowerCase();
+    if (["all", "all platforms", "all-platforms", "all_platforms"].includes(key)) return "all";
+    if (["linkedin", "linked in"].includes(key)) return "linkedin";
+    if (["instagram", "insta", "ig"].includes(key)) return "instagram";
+    if (["x", "twitter", "twitter x", "twitter/x", "x (twitter)"].includes(key)) return "x";
+    return key;
+  }
+
+  function insightPlatformIdentity(rawKey) {
+    const key = normalizePlatformKey(rawKey);
+    const label = key === "all" ? "All platforms" : key === "linkedin" ? "LinkedIn" : key === "instagram" ? "Instagram" : key === "x" ? "X" : (rawKey || "Platform");
+    const icon = key === "all"
+      ? `<span class="insight-platform-cluster" aria-hidden="true">
+          <span class="insight-cluster-icon linkedin"><i class="bi bi-linkedin"></i></span>
+          <span class="insight-cluster-icon instagram"><i class="bi bi-instagram"></i></span>
+          <span class="insight-cluster-icon x"><i class="bi bi-twitter-x"></i></span>
+        </span>`
+      : platformBrandIcon(key);
+
+    return `<span class="insight-platform-identity" data-platform="${key}">${icon}<span>${label}</span></span>`;
   }
 
   function signedNumber(value) {
@@ -724,14 +748,16 @@
         <div class="comparison-badge"><span class="comparison-dot"></span>${month.label} vs ${month.previousLabel}</div>
       </div>
 
-      <div class="metric-grid platform-metrics">
+      <div class="metric-grid platform-metrics ${key === "x" ? "platform-metrics-five" : ""}">
         ${metricCard({ value: p.posts, label: "Posts published", comparison: c.posts, icon: "bi-file-earmark-text" })}
         ${metricCard({ value: p.followers, label: "Followers", comparison: c.followers, icon: "bi-people" })}
         ${metricCard({ value: p.newFollowers, label: "Net new followers", comparison: c.newFollowers, valuePrefix: p.newFollowers !== null && p.newFollowers >= 0 ? "+" : "", icon: "bi-person-plus" })}
         ${metricCard({ value: p.impressions, label: "Impressions", comparison: c.impressions, icon: "bi-eye" })}
-        ${metricCard({ value: p.reach, label: "Reach", comparison: c.reach, icon: "bi-broadcast" })}
+        ${key !== "x" ? metricCard({ value: p.reach, label: "Reach", comparison: c.reach, icon: "bi-broadcast" }) : ""}
         ${metricCard({ value: p.engagements, label: "Engagements", comparison: c.engagements, icon: "bi-hand-thumbs-up" })}
       </div>
+
+      ${key === "x" ? `<div class="platform-method-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span>Meltwater does not report unique reach for X.</span></div>` : ""}
 
       <div class="platform-rate-line">
         <span class="rate-label">Engagement rate</span>
@@ -765,7 +791,11 @@
 
   function insightsMarkup(month) {
     const preferredOrder = ["all", "linkedin", "instagram", "x"];
-    const insights = month.insights.slice().sort((a, b) => preferredOrder.indexOf(a.platform) - preferredOrder.indexOf(b.platform));
+    const orderOf = (value) => {
+      const i = preferredOrder.indexOf(normalizePlatformKey(value));
+      return i === -1 ? preferredOrder.length : i;
+    };
+    const insights = month.insights.slice().sort((a, b) => orderOf(a.platform) - orderOf(b.platform));
     return `
       <div class="section-intro">
         <div><div class="section-kicker">Management view</div><h2 class="section-title">Insights & recommended actions</h2></div>
@@ -774,7 +804,7 @@
       <div class="insights-grid">
         ${insights.length ? insights.map(i => `
           <article class="insight-card">
-            <div class="insight-top"><div class="insight-platform">${i.platform === "all" ? "All platforms" : i.platform === "linkedin" ? "LinkedIn" : i.platform === "instagram" ? "Instagram" : "X"}</div><div class="insight-timeline">${i.timeline || "—"}</div></div>
+            <div class="insight-top"><div class="insight-platform">${insightPlatformIdentity(i.platform)}</div><div class="insight-timeline">${i.timeline || "—"}</div></div>
             <div class="insight-area">${i.observation || "No observation entered."}</div>
             <div class="insight-action">${i.recommended_action || "No recommended action entered."}</div>
           </article>`).join("") : '<div class="empty-state">No insights have been published for this month.</div>'}
