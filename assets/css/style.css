@@ -367,6 +367,17 @@ button, select, input, textarea { font: inherit; }
 .insight-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: 0 1px 3px rgba(16,24,40,.04); }
 .insight-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .insight-platform { color: var(--ink); font-size: 14px; font-weight: 750; }
+.insight-platform-identity { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.insight-platform-identity > span:last-child { line-height: 1.15; }
+.insight-platform .social-platform-icon { width: 32px; height: 32px; border-radius: 9px; box-shadow: 0 1px 2px rgba(16,24,40,.08); }
+.insight-platform .social-platform-icon i { font-size: 17px; }
+.insight-platform-cluster { display: inline-flex; align-items: center; min-width: 54px; padding-left: 1px; }
+.insight-cluster-icon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #fff; border-radius: 8px; color: #fff; box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+.insight-cluster-icon + .insight-cluster-icon { margin-left: -7px; }
+.insight-cluster-icon.linkedin { background: #0a66c2; }
+.insight-cluster-icon.instagram { background: linear-gradient(135deg, #833ab4 0%, #e1306c 48%, #f77737 100%); }
+.insight-cluster-icon.x { background: #111; }
+.insight-cluster-icon i { font-size: 13px; line-height: 1; }
 .insight-timeline { color: #667085; border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; font-size: 9px; }
 .insight-area { color: #727b8a; font-size: 11px; line-height: 1.4; margin-bottom: 10px; }
 .insight-action { color: #384152; font-size: 12px; line-height: 1.4; font-weight: 650; }
@@ -843,5 +854,45 @@ button, select, input, textarea { font: inherit; }
 
   .executive-metric-card {
     min-height: 225px;
+  }
+}
+
+
+/* X does not have a Meltwater unique-reach metric */
+.metric-grid.platform-metrics.platform-metrics-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.platform-method-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: -4px 0 14px 2px;
+  color: #8a93a3;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.platform-method-note i {
+  color: #98a1af;
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1350px) {
+  .metric-grid.platform-metrics.platform-metrics-five {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .metric-grid.platform-metrics.platform-metrics-five {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .metric-grid.platform-metrics.platform-metrics-five {
+    grid-template-columns: 1fr;
   }
 }
