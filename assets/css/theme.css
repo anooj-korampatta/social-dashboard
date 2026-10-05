@@ -281,3 +281,91 @@ html[data-theme="dark"] .btn-success { background: #3fae2a !important; border-co
   html[data-theme="dark"] body,
   html[data-theme="dark"] .app-main { background: #fff !important; color: #344054 !important; }
 }
+
+/* ---------------------------------------------------------
+   Dark theme fix: Monthly trend / historical performance table
+   --------------------------------------------------------- */
+html[data-theme="dark"] .monthly-trend-panel .historical-trend-scroll,
+html[data-theme="dark"] .historical-trend-scroll {
+  background: var(--surface) !important;
+  scrollbar-color: #4a515b transparent;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-trend-table,
+html[data-theme="dark"] .historical-trend-table {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-trend-table th,
+html[data-theme="dark"] .monthly-trend-panel .historical-trend-table td,
+html[data-theme="dark"] .historical-trend-table th,
+html[data-theme="dark"] .historical-trend-table td {
+  background: var(--surface) !important;
+  border-color: #343a42 !important;
+  color: var(--text) !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-trend-table thead th,
+html[data-theme="dark"] .historical-trend-table thead th {
+  background: #20242a !important;
+  color: #aeb7c4 !important;
+  border-color: #3a414a !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-metric-head,
+html[data-theme="dark"] .historical-metric-head {
+  background: #20242a !important;
+  color: #aeb7c4 !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-platform-row th,
+html[data-theme="dark"] .historical-platform-row th {
+  background: #1d2126 !important;
+  color: var(--ink) !important;
+  border-color: #343a42 !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .historical-metric-label,
+html[data-theme="dark"] .historical-metric-label {
+  background: var(--surface) !important;
+  color: #cbd2dc !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-month-label,
+html[data-theme="dark"] .historical-trend-table .trend-month-label {
+  color: #f2f4f7 !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-year-label,
+html[data-theme="dark"] .historical-trend-table .trend-year-label {
+  color: #87919f !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-cell-value,
+html[data-theme="dark"] .historical-trend-table .trend-cell-value {
+  color: #eef1f4 !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-delta.positive,
+html[data-theme="dark"] .historical-trend-table .trend-delta.positive {
+  color: #76d76a !important;
+  background: rgba(63,174,42,.16) !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-delta.negative,
+html[data-theme="dark"] .historical-trend-table .trend-delta.negative {
+  color: #ff7f7f !important;
+  background: rgba(239,103,103,.15) !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .trend-delta.neutral,
+html[data-theme="dark"] .historical-trend-table .trend-delta.neutral {
+  color: #a8b0bb !important;
+  background: #262b31 !important;
+}
+
+html[data-theme="dark"] .monthly-trend-panel .social-platform-icon,
+html[data-theme="dark"] .historical-trend-table .social-platform-icon {
+  border-color: #2d333b !important;
+}
