@@ -305,11 +305,22 @@
     return `assets/images/post-${platform}-${type === "top" ? "top" : "low"}.svg`;
   }
 
+  function safeExternalUrl(value) {
+    if (!value) return null;
+    try {
+      const url = new URL(String(value).trim());
+      return ["http:", "https:"].includes(url.protocol) ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
   function normalizePost(rows, platform, type) {
     const row = (rows || []).find(r => r.platform === platform && r.performance_type === type);
     if (!row) {
       return {
         image: placeholderImage(platform, type),
+        postUrl: null,
         date: "No post selected",
         title: type === "top" ? "Add the top-performing post in the CMS" : "Add the needs-attention post in the CMS",
         er: null,
@@ -319,10 +330,16 @@
         extraValue: null
       };
     }
-    const extraLabel = row.link_clicks !== null && row.link_clicks !== undefined ? "Link clicks" : "Likes";
-    const extraValue = extraLabel === "Link clicks" ? row.link_clicks : row.likes;
+
+    // Instagram cards use Likes rather than Link clicks.
+    // LinkedIn/X keep Link clicks when Meltwater provides them, otherwise Likes.
+    const useLikes = platform === "instagram" || row.link_clicks === null || row.link_clicks === undefined;
+    const extraLabel = useLikes ? "Likes" : "Link clicks";
+    const extraValue = useLikes ? row.likes : row.link_clicks;
+
     return {
       image: row.image_url || placeholderImage(platform, type),
+      postUrl: safeExternalUrl(row.post_url),
       date: row.post_date ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${row.post_date}T00:00:00Z`)) : "—",
       title: row.title || row.post_url || "Untitled post",
       er: row.engagement_rate,
@@ -716,10 +733,15 @@
       </div>`;
   }
 
-  function postCard(label, post) {
+  function postCard(label, post, platformName) {
+    const thumbnail = `<img class="post-thumb" src="${post.image}" alt="${platformName} ${label.toLowerCase()} post thumbnail">`;
+    const thumbnailMarkup = post.postUrl
+      ? `<a class="post-thumb-link" href="${post.postUrl}" target="_blank" rel="noopener noreferrer" aria-label="Open ${platformName} ${label.toLowerCase()} post">${thumbnail}<span class="post-thumb-open" aria-hidden="true"><i class="bi bi-box-arrow-up-right"></i></span></a>`
+      : thumbnail;
+
     return `
       <article class="post-card">
-        <img class="post-thumb" src="${post.image}" alt="Social post thumbnail">
+        ${thumbnailMarkup}
         <div class="post-copy">
           <div class="post-kicker">${label} · ${post.date}</div>
           <div class="post-title">${post.title}</div>
@@ -778,8 +800,8 @@
       </div>
 
       <div class="post-grid">
-        ${postCard("Top performing", p.topPost)}
-        ${postCard("Needs attention", p.lowPost)}
+        ${postCard("Top performing", p.topPost, p.name)}
+        ${postCard("Needs attention", p.lowPost, p.name)}
       </div>
 
       <div class="action-strip">
