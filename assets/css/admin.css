@@ -484,3 +484,35 @@ textarea.form-control { min-height: 112px; resize: vertical; }
   .import-actions .btn { flex: 1 1 170px; }
   .import-kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
+
+
+/* Month visibility control */
+.report-statuses {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.status-badge.hidden {
+  background: #fff4e5;
+  color: #9a6515;
+}
+.btn-icon-only {
+  width: 42px;
+  min-width: 42px;
+  padding-left: 0;
+  padding-right: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.report-visibility-toggle[data-is-hidden="true"] {
+  border-color: #c7ddc0;
+  color: var(--gwc-green-dark);
+  background: var(--gwc-green-soft);
+}
+.report-visibility-toggle[data-is-hidden="true"]:hover,
+.report-visibility-toggle[data-is-hidden="true"]:focus {
+  border-color: #a9cca0;
+  color: var(--gwc-green-dark);
+  background: #e5f5e1;
+}
