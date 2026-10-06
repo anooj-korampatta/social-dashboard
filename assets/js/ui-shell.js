@@ -112,6 +112,171 @@
     updateThemeButtons(currentTheme());
   }
 
+
+  // Dashboard skeleton loading -------------------------------------------------
+  // This stays independent of dashboard.js so async data-loading UI can evolve
+  // without touching the reporting/data logic.
+  const SKELETON_TARGETS = [
+    "overviewContent",
+    "linkedinContent",
+    "instagramContent",
+    "xContent",
+    "insightsContent"
+  ];
+
+  function injectSkeletonStyles() {
+    if (document.querySelector('link[data-gwc-skeleton-styles]')) return;
+    const current = document.currentScript;
+    if (!current || !current.src) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = new URL("../css/skeleton.css", current.src).href;
+    link.setAttribute("data-gwc-skeleton-styles", "true");
+    document.head.appendChild(link);
+  }
+
+  function skeletonLine(width = "100%", height = "14px") {
+    return `<span class="gwc-skeleton-block" style="width:${width};height:${height}"></span>`;
+  }
+
+  function overviewSkeleton() {
+    const cards = Array.from({ length: 6 }, (_, i) => `
+      <div class="gwc-skeleton-card gwc-skeleton-kpi">
+        <div class="gwc-skeleton-card-top">
+          <span class="gwc-skeleton-block gwc-skeleton-icon"></span>
+          <span class="gwc-skeleton-block gwc-skeleton-mini-icon"></span>
+        </div>
+        ${skeletonLine(i % 2 ? "42%" : "50%", "15px")}
+        <div class="gwc-skeleton-number">${skeletonLine(i === 1 ? "58%" : "42%", "38px")}</div>
+        ${skeletonLine("46%", "18px")}
+        ${skeletonLine("34%", "11px")}
+      </div>`).join("");
+
+    return `
+      <div class="gwc-skeleton-screen" aria-hidden="true">
+        <div class="gwc-skeleton-heading">
+          <div>${skeletonLine("140px", "11px")}${skeletonLine("220px", "26px")}</div>
+          ${skeletonLine("170px", "34px")}
+        </div>
+        <div class="gwc-skeleton-kpi-grid">${cards}</div>
+        <div class="gwc-skeleton-panel gwc-skeleton-chart-panel">
+          <div class="gwc-skeleton-panel-head">
+            <div>${skeletonLine("155px", "20px")}${skeletonLine("105px", "11px")}</div>
+            <div class="gwc-skeleton-actions">${skeletonLine("130px", "38px")}${skeletonLine("130px", "38px")}</div>
+          </div>
+          <div class="gwc-skeleton-chart">
+            <span class="gwc-skeleton-chart-line line-a"></span>
+            <span class="gwc-skeleton-chart-line line-b"></span>
+            <span class="gwc-skeleton-chart-line line-c"></span>
+          </div>
+        </div>
+        <div class="gwc-skeleton-panel gwc-skeleton-table-panel">
+          <div class="gwc-skeleton-panel-head">
+            <div>${skeletonLine("135px", "20px")}${skeletonLine("95px", "11px")}</div>
+            ${skeletonLine("130px", "38px")}
+          </div>
+          <div class="gwc-skeleton-table">
+            ${Array.from({ length: 6 }, () => `<div class="gwc-skeleton-table-row">${Array.from({ length: 6 }, (_, j) => skeletonLine(j === 0 ? "78%" : "58%", "13px")).join("")}</div>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function platformSkeleton() {
+    const cards = Array.from({ length: 6 }, (_, i) => `
+      <div class="gwc-skeleton-card gwc-skeleton-kpi compact">
+        <div class="gwc-skeleton-card-top"><span class="gwc-skeleton-block gwc-skeleton-icon"></span><span class="gwc-skeleton-block gwc-skeleton-mini-icon"></span></div>
+        ${skeletonLine(i % 2 ? "45%" : "54%", "14px")}
+        <div class="gwc-skeleton-number">${skeletonLine(i === 1 ? "62%" : "44%", "34px")}</div>
+        ${skeletonLine("54%", "16px")}
+        ${skeletonLine("38%", "10px")}
+      </div>`).join("");
+
+    return `
+      <div class="gwc-skeleton-screen" aria-hidden="true">
+        <div class="gwc-skeleton-heading"><div>${skeletonLine("150px", "11px")}${skeletonLine("120px", "27px")}</div>${skeletonLine("165px", "34px")}</div>
+        <div class="gwc-skeleton-kpi-grid">${cards}</div>
+        <div class="gwc-skeleton-two-col">
+          <div class="gwc-skeleton-panel">${skeletonLine("140px", "18px")}<div class="gwc-skeleton-chart short"></div></div>
+          <div class="gwc-skeleton-panel">${skeletonLine("115px", "18px")}<div class="gwc-skeleton-bars">${Array.from({ length: 4 }, () => `<div>${skeletonLine("80px", "12px")}${skeletonLine("70%", "8px")}</div>`).join("")}</div></div>
+        </div>
+        <div class="gwc-skeleton-two-col">
+          <div class="gwc-skeleton-panel gwc-skeleton-post">${skeletonLine("90px", "100px")}${skeletonLine("65%", "18px")}</div>
+          <div class="gwc-skeleton-panel gwc-skeleton-post">${skeletonLine("90px", "100px")}${skeletonLine("65%", "18px")}</div>
+        </div>
+      </div>`;
+  }
+
+  function insightsSkeleton() {
+    return `
+      <div class="gwc-skeleton-screen" aria-hidden="true">
+        <div class="gwc-skeleton-heading"><div>${skeletonLine("145px", "11px")}${skeletonLine("300px", "27px")}</div>${skeletonLine("125px", "34px")}</div>
+        <div class="gwc-skeleton-insights-grid">
+          ${Array.from({ length: 4 }, () => `
+            <div class="gwc-skeleton-panel gwc-skeleton-insight">
+              <div class="gwc-skeleton-card-top">${skeletonLine("145px", "20px")}${skeletonLine("85px", "28px")}</div>
+              ${skeletonLine("82%", "13px")}
+              ${skeletonLine("96%", "15px")}
+              ${skeletonLine("72%", "15px")}
+            </div>`).join("")}
+        </div>
+      </div>`;
+  }
+
+  function skeletonMarkupFor(id) {
+    if (id === "overviewContent") return overviewSkeleton();
+    if (id === "insightsContent") return insightsSkeleton();
+    return platformSkeleton();
+  }
+
+  function setDashboardBusy(isBusy) {
+    const content = document.querySelector("#dashboardContent");
+    if (!content) return;
+    content.setAttribute("aria-busy", String(Boolean(isBusy)));
+    content.classList.toggle("dashboard-is-loading", Boolean(isBusy));
+  }
+
+  function showDashboardSkeletons() {
+    if (!document.querySelector("#dashboardContent")) return;
+    setDashboardBusy(true);
+    SKELETON_TARGETS.forEach((id) => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      target.innerHTML = skeletonMarkupFor(id);
+    });
+  }
+
+  function watchDashboardRendering() {
+    const content = document.querySelector("#dashboardContent");
+    if (!content || typeof MutationObserver === "undefined") return;
+    const observer = new MutationObserver(() => {
+      const activePane = content.querySelector(".tab-pane.active");
+      if (activePane && !activePane.querySelector(".gwc-skeleton-screen")) {
+        setDashboardBusy(false);
+      }
+    });
+    observer.observe(content, { childList: true, subtree: true });
+  }
+
+  function wireDashboardLoadingState() {
+    const monthSelect = document.querySelector("#monthSelect");
+    if (monthSelect) {
+      // Capture runs before dashboard.js's async change handler, so stale values
+      // are replaced by the loading state immediately.
+      monthSelect.addEventListener("change", showDashboardSkeletons, true);
+    }
+  }
+
+  window.GWC_SKELETON = {
+    show: showDashboardSkeletons,
+    hide: () => setDashboardBusy(false)
+  };
+
+  injectSkeletonStyles();
+  showDashboardSkeletons();
+  watchDashboardRendering();
+  wireDashboardLoadingState();
+
   injectThemeStyles();
   applyTheme(localStorage.getItem(THEME_KEY) || "light");
   createThemeToggle();
