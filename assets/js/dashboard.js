@@ -352,7 +352,7 @@
 
   async function fetchReportByMonth(date, includeDraft = false) {
     let q = supabase.from("reports").select("*").eq("report_month", date);
-    if (!includeDraft) q = q.eq("status", "published");
+    if (!includeDraft) q = q.eq("status", "published").eq("is_hidden", false);
     const { data, error } = await q.maybeSingle();
     if (error) throw error;
     return data || null;
@@ -394,7 +394,7 @@
       .lte("report_month", report.report_month)
       .order("report_month", { ascending: false })
       .limit(14);
-    if (!previewMode) trendQuery = trendQuery.eq("status", "published");
+    if (!previewMode) trendQuery = trendQuery.eq("status", "published").eq("is_hidden", false);
     const { data: trendReports, error: trendReportsError } = await trendQuery;
     if (trendReportsError) throw trendReportsError;
 
@@ -1005,6 +1005,7 @@
       .from("reports")
       .select("*")
       .eq("status", "published")
+      .eq("is_hidden", false)
       .order("report_month", { ascending: false });
     if (error) throw error;
     state.reports = data || [];

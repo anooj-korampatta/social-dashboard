@@ -33,12 +33,18 @@
 
     const stats = document.querySelector("#adminStats");
     if (stats) {
-      const published = (data || []).filter(r => r.status === "published").length;
+      const published = (data || []).filter(r => r.status === "published" && !r.is_hidden).length;
+      const hiddenPublished = (data || []).filter(r => r.status === "published" && r.is_hidden).length;
       const drafts = (data || []).filter(r => r.status !== "published").length;
       const latest = data?.[0] ? monthLabel(data[0].report_month) : "—";
       const cards = stats.querySelectorAll(".admin-stat-card");
       if (cards[0]) { cards[0].querySelector(".admin-stat-value").textContent = data?.length || 0; cards[0].querySelector(".admin-stat-note").textContent = "Reporting periods"; }
-      if (cards[1]) { cards[1].querySelector(".admin-stat-value").textContent = published; cards[1].querySelector(".admin-stat-note").textContent = "Visible on dashboard"; }
+      if (cards[1]) {
+        cards[1].querySelector(".admin-stat-value").textContent = published;
+        cards[1].querySelector(".admin-stat-note").textContent = hiddenPublished
+          ? `Visible on dashboard · ${hiddenPublished} hidden`
+          : "Visible on dashboard";
+      }
       if (cards[2]) { cards[2].querySelector(".admin-stat-value").textContent = drafts; cards[2].querySelector(".admin-stat-note").textContent = drafts === 1 ? "Report awaiting publish" : "Reports awaiting publish"; }
       if (cards[3]) { cards[3].querySelector(".admin-stat-value").textContent = latest; cards[3].querySelector(".admin-stat-note").textContent = data?.[0]?.status === "published" ? "Latest published/draft record" : "Latest draft/published record"; }
     }
@@ -54,14 +60,54 @@
           <div class="report-month">${monthLabel(report.report_month)}</div>
           <div class="report-meta">${report.source || "Source not set"}${report.prepared_by ? ` · ${report.prepared_by}` : ""}</div>
         </div>
-        <div><span class="status-badge ${report.status === "published" ? "published" : ""}">${report.status}</span></div>
+        <div class="report-statuses">
+          <span class="status-badge ${report.status === "published" ? "published" : ""}">${report.status}</span>
+          ${report.is_hidden ? '<span class="status-badge hidden"><i class="bi bi-eye-slash me-1" aria-hidden="true"></i>Hidden</span>' : ''}
+        </div>
         <div class="report-meta">Updated ${report.updated_at ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(report.updated_at)) : "—"}</div>
         <div class="report-actions">
           <a class="btn btn-sm btn-outline-secondary" href="../index.html?preview=${encodeURIComponent(report.id)}" target="_blank" rel="noopener"><i class="bi bi-eye me-1"></i>Preview</a>
+          <button
+            class="btn btn-sm btn-outline-secondary report-visibility-toggle btn-icon-only"
+            type="button"
+            data-report-id="${report.id}"
+            data-is-hidden="${report.is_hidden ? "true" : "false"}"
+            aria-label="${report.is_hidden ? "Show" : "Hide"} ${monthLabel(report.report_month)} on dashboard"
+            title="${report.is_hidden ? "Show on dashboard" : "Hide from dashboard"}">
+            <i class="bi ${report.is_hidden ? "bi-eye" : "bi-eye-slash"}" aria-hidden="true"></i>
+          </button>
           <a class="btn btn-sm btn-dark" href="report.html?id=${encodeURIComponent(report.id)}"><i class="bi bi-pencil me-1"></i>Edit</a>
         </div>
       </article>`).join("");
   }
+
+  list.addEventListener("click", async event => {
+    const button = event.target.closest(".report-visibility-toggle");
+    if (!button) return;
+
+    hideAlert();
+    const reportId = button.dataset.reportId;
+    const currentlyHidden = button.dataset.isHidden === "true";
+    const nextHidden = !currentlyHidden;
+    button.disabled = true;
+
+    try {
+      const { error } = await client
+        .from("reports")
+        .update({ is_hidden: nextHidden })
+        .eq("id", reportId);
+      if (error) throw error;
+
+      await loadReports();
+      showAlert(
+        nextHidden ? "Reporting month hidden from the dashboard." : "Reporting month restored to the dashboard.",
+        "success"
+      );
+    } catch (err) {
+      button.disabled = false;
+      showAlert(err.message || "Unable to update dashboard visibility.");
+    }
+  });
 
   async function init() {
     if (!api?.ready || !client) {
