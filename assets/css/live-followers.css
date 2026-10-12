@@ -1,0 +1,193 @@
+.live-audience-card {
+  margin: 0 0 18px;
+  padding: 17px 20px 14px;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, .035);
+}
+
+.live-audience-heading,
+.live-audience-sync,
+.live-audience-platform,
+.live-platform-copy {
+  display: flex;
+  align-items: center;
+}
+
+.live-audience-heading {
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.live-audience-kicker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 2px;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.live-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3fae2a;
+  box-shadow: 0 0 0 4px rgba(63, 174, 42, .11);
+}
+
+.live-audience-title {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.live-audience-sync {
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.live-updated-at {
+  color: #8a929f;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.live-refresh-btn {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #e2e5e9;
+  border-radius: 10px;
+  background: #fff;
+  color: #596170;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.live-refresh-btn:hover {
+  border-color: #cfd4da;
+  background: #f8f9fa;
+  color: #111827;
+}
+
+.live-refresh-btn:focus-visible {
+  outline: 3px solid rgba(63, 174, 42, .16);
+  outline-offset: 2px;
+}
+
+.live-refresh-btn:disabled { cursor: wait; opacity: .72; }
+.live-refresh-btn.is-refreshing i { animation: live-spin .8s linear infinite; }
+
+.live-audience-platforms {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.live-audience-platform {
+  position: relative;
+  gap: 11px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #eceef1;
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.live-platform-icon {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(16, 24, 40, .05);
+  font-size: 17px;
+}
+
+.live-linkedin .live-platform-icon { color: #0a66c2; }
+.live-instagram .live-platform-icon { color: #c13584; }
+.live-x .live-platform-icon { color: #111; }
+
+.live-platform-copy {
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.live-platform-label {
+  margin-bottom: 1px;
+  color: #697180;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.live-platform-count {
+  color: #111827;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+
+.live-platform-warning {
+  margin-left: auto;
+  color: #d64545;
+  font-size: 13px;
+}
+
+.live-audience-footnote {
+  margin-top: 10px;
+  color: #9299a4;
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
+[data-theme="dark"] .live-audience-card {
+  border-color: #2c3035;
+  background: #17191c;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .live-audience-title,
+[data-theme="dark"] .live-platform-count { color: #f5f6f7; }
+[data-theme="dark"] .live-audience-kicker,
+[data-theme="dark"] .live-platform-label { color: #a7afba; }
+[data-theme="dark"] .live-updated-at,
+[data-theme="dark"] .live-audience-footnote { color: #7f8792; }
+[data-theme="dark"] .live-refresh-btn {
+  border-color: #30353b;
+  background: #1e2125;
+  color: #c2c8d0;
+}
+[data-theme="dark"] .live-refresh-btn:hover { background: #25292e; color: #fff; }
+[data-theme="dark"] .live-audience-platform {
+  border-color: #2a2f35;
+  background: #1d2024;
+}
+[data-theme="dark"] .live-platform-icon {
+  background: #24282d;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+[data-theme="dark"] .live-x .live-platform-icon { color: #f5f6f7; }
+
+@keyframes live-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .live-audience-heading { align-items: flex-start; }
+  .live-audience-platforms { grid-template-columns: 1fr; }
+  .live-updated-at { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-refresh-btn,
+  .live-refresh-btn i { transition: none; animation: none !important; }
+}
