@@ -272,6 +272,19 @@
     hide: () => setDashboardBusy(false)
   };
 
+  function injectLiveFollowersModule() {
+    if (document.querySelector('script[data-gwc-live-followers]')) return;
+    const current = document.currentScript;
+    if (!current || !current.src || !document.querySelector("#overviewContent")) return;
+    const script = document.createElement("script");
+    script.src = new URL("live-followers.js", current.src).href;
+    script.defer = true;
+    script.setAttribute("data-gwc-live-followers", "true");
+    document.head.appendChild(script);
+  }
+
+  injectLiveFollowersModule();
+
   injectSkeletonStyles();
   showDashboardSkeletons();
   watchDashboardRendering();
