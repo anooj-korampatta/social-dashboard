@@ -82,6 +82,44 @@
     window.dispatchEvent(new CustomEvent("gwc:themechange", { detail: { theme: next } }));
   }
 
+  function activateDashboardHashTab() {
+    const hash = window.location.hash;
+    if (!hash || !hash.startsWith("#pane-")) return;
+    const target = document.querySelector(`[data-bs-target="${hash}"]`);
+    if (!target || typeof bootstrap === "undefined") return;
+    try { bootstrap.Tab.getOrCreateInstance(target).show(); } catch (_) {}
+  }
+
+  function injectCampaignNavigation() {
+    if (document.querySelector("[data-campaign-nav]")) return;
+
+    const isAdmin = /\/admin\//.test(window.location.pathname);
+    if (isAdmin) {
+      const nav = document.querySelector(".admin-nav");
+      if (!nav) return;
+      const link = document.createElement("a");
+      link.className = "admin-nav-link";
+      link.href = "campaigns.html";
+      link.setAttribute("data-campaign-nav", "");
+      link.innerHTML = '<i class="bi bi-megaphone"></i><span>Campaigns</span>';
+      const reportsLink = [...nav.querySelectorAll("a")].find(a => /#reports$/.test(a.getAttribute("href") || "") || /Reports/i.test(a.textContent || ""));
+      if (reportsLink?.nextSibling) nav.insertBefore(link, reportsLink.nextSibling);
+      else nav.appendChild(link);
+      return;
+    }
+
+    const nav = document.querySelector('.sidebar-nav[role="tablist"]');
+    if (!nav) return;
+    const link = document.createElement("a");
+    link.className = "nav-link sidebar-link";
+    link.href = "campaigns.html";
+    link.setAttribute("data-campaign-nav", "");
+    link.innerHTML = '<i class="bi bi-megaphone"></i><span>Campaigns</span>';
+    const insights = nav.querySelector("#tab-insights");
+    if (insights) nav.insertBefore(link, insights);
+    else nav.appendChild(link);
+  }
+
   function createThemeToggle() {
     if (document.querySelector("[data-theme-toggle]")) return;
     const dashboardActions = document.querySelector(".header-actions");
@@ -272,20 +310,9 @@
     hide: () => setDashboardBusy(false)
   };
 
-  function injectLiveFollowersModule() {
-    if (document.querySelector('script[data-gwc-live-followers]')) return;
-    const current = document.currentScript;
-    if (!current || !current.src || !document.querySelector("#overviewContent")) return;
-    const script = document.createElement("script");
-    script.src = new URL("live-followers.js", current.src).href;
-    script.defer = true;
-    script.setAttribute("data-gwc-live-followers", "true");
-    document.head.appendChild(script);
-  }
-
-  injectLiveFollowersModule();
-
   injectSkeletonStyles();
+  injectCampaignNavigation();
+  activateDashboardHashTab();
   showDashboardSkeletons();
   watchDashboardRendering();
   wireDashboardLoadingState();
