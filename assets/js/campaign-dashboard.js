@@ -72,10 +72,30 @@
     ];
   }
 
+  const platformOrder = { linkedin: 1, instagram: 2, facebook: 3, x: 4 };
+
+  function orderedPlatforms() {
+    return [...state.platforms].sort((a, b) => (platformOrder[a.platform] || 99) - (platformOrder[b.platform] || 99));
+  }
+
+  function contributionRows() {
+    const totalImp = Number(state.campaign?.impressions || 0);
+    const totalEng = Number(state.campaign?.engagements || 0);
+    return orderedPlatforms().map(p => {
+      const impShare = totalImp ? (Number(p.impressions || 0) / totalImp) * 100 : 0;
+      const engShare = totalEng ? (Number(p.engagements || 0) / totalEng) * 100 : 0;
+      return `<div class="campaign-contribution-row">
+        <div class="campaign-contribution-label">${platformIcon(p.platform)}<span>${labels[p.platform]}</span></div>
+        <div class="campaign-contribution-metric"><div class="campaign-contribution-value"><span>Impressions</span><strong>${impShare.toFixed(0)}%</strong></div><div class="campaign-contribution-track"><span class="${p.platform}" style="width:${Math.min(100, impShare).toFixed(1)}%"></span></div></div>
+        <div class="campaign-contribution-metric"><div class="campaign-contribution-value"><span>Engagements</span><strong>${engShare.toFixed(0)}%</strong></div><div class="campaign-contribution-track"><span class="${p.platform}" style="width:${Math.min(100, engShare).toFixed(1)}%"></span></div></div>
+      </div>`;
+    }).join("");
+  }
+
   function renderOverview() {
     const c = state.campaign;
     const insights = insightCopy();
-    const platformCards = state.platforms.map(p => `
+    const platformCards = orderedPlatforms().map(p => `
       <article class="campaign-platform-card">
         <div class="campaign-platform-head">
           <div class="campaign-platform-name">${platformIcon(p.platform)}${labels[p.platform]}</div>
@@ -89,16 +109,27 @@
         </div>
       </article>`).join("");
 
-    return `<div class="campaign-screen">
+    return `<div class="campaign-screen campaign-overview-screen">
       <div class="campaign-kpi-grid">
         <article class="campaign-kpi"><span class="campaign-kpi-label">Content items</span><strong class="campaign-kpi-value">${fmt(c.total_items)}</strong><span class="campaign-kpi-note">Posts + Stories</span></article>
         <article class="campaign-kpi"><span class="campaign-kpi-label">Impressions</span><strong class="campaign-kpi-value">${fmt(c.impressions)}</strong><span class="campaign-kpi-note">Campaign total</span></article>
         <article class="campaign-kpi"><span class="campaign-kpi-label">Engagements</span><strong class="campaign-kpi-value">${fmt(c.engagements)}</strong><span class="campaign-kpi-note">Campaign total</span></article>
-        <article class="campaign-kpi"><span class="campaign-kpi-label">Engagement rate</span><strong class="campaign-kpi-value">${pct(c.engagement_rate)}</strong><span class="campaign-kpi-note">Meltwater reporting period</span></article>
+        <article class="campaign-kpi"><span class="campaign-kpi-label">Engagement rate</span><strong class="campaign-kpi-value">${pct(c.engagement_rate)}</strong><span class="campaign-kpi-note">Reporting period</span></article>
         <article class="campaign-kpi"><span class="campaign-kpi-label">Post link clicks</span><strong class="campaign-kpi-value">${fmt(c.link_clicks)}</strong><span class="campaign-kpi-note">Recorded clicks</span></article>
       </div>
+
       <div class="campaign-platform-grid">${platformCards}</div>
-      <div class="campaign-insight-strip"><div class="campaign-insight-title">Key takeaways</div>${insights.map(i => `<div class="campaign-insight">${i}</div>`).join("")}</div>
+
+      <div class="campaign-overview-bottom">
+        <section class="campaign-contribution-panel">
+          <div class="campaign-panel-heading"><div><span class="campaign-eyebrow">Cross-channel mix</span><h2>Performance contribution</h2></div><span class="campaign-panel-note">Share of campaign totals</span></div>
+          <div class="campaign-contribution-list">${contributionRows()}</div>
+        </section>
+        <section class="campaign-takeaways-panel">
+          <div class="campaign-panel-heading"><div><span class="campaign-eyebrow">Executive readout</span><h2>Key takeaways</h2></div></div>
+          <div class="campaign-takeaway-list">${insights.map((i, idx) => `<div class="campaign-takeaway"><span>${idx + 1}</span><p>${i}</p></div>`).join("")}</div>
+        </section>
+      </div>
     </div>`;
   }
 
