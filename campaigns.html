@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" class="auth-check-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campaign Performance · GWC Social Media Reporting</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/campaigns.css">
+  <style>html.auth-check-pending body{visibility:hidden}</style>
+</head>
+<body class="app-body campaign-page-body">
+  <div class="app-layout" id="appLayout">
+    <aside class="app-sidebar" id="appSidebar" aria-label="Dashboard navigation">
+      <div class="sidebar-brand">
+        <div class="brand-mark"><img src="assets/images/gwc-logo-placeholder.svg" alt="GWC"></div>
+        <div class="brand-copy"><strong>GWC</strong><span>Social Media Reporting</span></div>
+      </div>
+      <nav class="sidebar-nav" aria-label="Report sections">
+        <a class="sidebar-link" href="index.html"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+        <a class="sidebar-link" href="index.html#pane-linkedin"><i class="bi bi-linkedin"></i><span>LinkedIn</span></a>
+        <a class="sidebar-link" href="index.html#pane-instagram"><i class="bi bi-instagram"></i><span>Instagram</span></a>
+        <a class="sidebar-link" href="index.html#pane-x"><i class="bi bi-twitter-x"></i><span>X</span></a>
+        <a class="sidebar-link active" data-campaign-nav href="campaigns.html"><i class="bi bi-megaphone"></i><span>Campaigns</span></a>
+        <a class="sidebar-link" href="index.html#pane-insights"><i class="bi bi-lightbulb"></i><span>Insights</span></a>
+      </nav>
+      <div class="sidebar-section-label">Management</div>
+      <div class="sidebar-nav sidebar-secondary">
+        <a class="sidebar-link d-none" data-admin-only href="admin/campaigns.html"><i class="bi bi-shield-lock"></i><span>Admin CMS</span></a>
+        <button class="sidebar-link" data-viewer-signout type="button"><i class="bi bi-box-arrow-right"></i><span>Sign out</span></button>
+      </div>
+      <button class="sidebar-collapse" id="sidebarToggle" type="button" aria-label="Collapse sidebar"><i class="bi bi-chevron-double-left"></i><span>Hide</span></button>
+    </aside>
+
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
+
+    <main class="app-main campaign-main">
+      <header class="app-topbar campaign-topbar">
+        <div class="topbar-title-wrap">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Open navigation"><i class="bi bi-list"></i></button>
+          <div>
+            <h1 class="page-title">Campaign Performance</h1>
+            <div class="page-meta"><span id="campaignMeta">Loading campaigns…</span></div>
+          </div>
+        </div>
+        <div class="header-actions campaign-header-actions">
+          <label class="visually-hidden" for="campaignSelect">Campaign</label>
+          <select id="campaignSelect" class="form-select campaign-select" disabled><option>Loading…</option></select>
+          <button id="campaignSnapshotBtn" class="btn btn-outline-secondary campaign-action-btn" type="button" disabled><i class="bi bi-camera me-1"></i>Snapshot</button>
+          <a id="campaignAdminBtn" class="btn btn-download d-none" data-admin-only href="admin/campaigns.html"><i class="bi bi-share me-1"></i>Share</a>
+        </div>
+      </header>
+
+      <div id="campaignMessage" class="system-message d-none" role="status"></div>
+
+      <section class="campaign-workspace" id="campaignWorkspace">
+        <div class="campaign-tabs" role="tablist" aria-label="Campaign analytics sections">
+          <button class="campaign-tab active" data-campaign-tab="overview" type="button">Overview</button>
+          <button class="campaign-tab" data-campaign-tab="platforms" type="button">Platforms</button>
+          <button class="campaign-tab" data-campaign-tab="trend" type="button">Trend</button>
+          <button class="campaign-tab" data-campaign-tab="content" type="button">Content</button>
+        </div>
+        <div class="campaign-stage" id="campaignStage" aria-live="polite"><div class="campaign-loading"><span class="spinner-border spinner-border-sm"></span> Loading campaign data…</div></div>
+      </section>
+      <footer class="footer-note campaign-footer">Campaign analytics · Source: Meltwater tagged organic social export.</footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/viewer-auth-guard.js"></script>
+  <script src="assets/js/ui-shell.js"></script>
+  <script src="assets/js/campaign-dashboard.js"></script>
+</body>
+</html>
