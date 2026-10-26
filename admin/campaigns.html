@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campaigns · GWC Reporting CMS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://use.typekit.net/wtc0foh.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/campaign-admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-app" id="appLayout">
+    <aside class="admin-sidebar" id="appSidebar" aria-label="CMS navigation">
+      <div class="admin-sidebar-brand">
+        <div class="admin-brand-mark"><img src="../assets/images/gwc-logo-placeholder.svg" alt="GWC"></div>
+        <div class="admin-brand-copy"><strong>GWC</strong><span>Reporting CMS</span></div>
+      </div>
+      <nav class="admin-nav">
+        <a class="admin-nav-link" href="index.html"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+        <a class="admin-nav-link" href="index.html#reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span></a>
+        <a class="admin-nav-link active" data-campaign-nav href="campaigns.html"><i class="bi bi-megaphone"></i><span>Campaigns</span></a>
+      </nav>
+      <div class="admin-sidebar-label">Portal</div>
+      <nav class="admin-nav admin-nav-secondary">
+        <a class="admin-nav-link" href="../index.html" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i><span>View dashboard</span></a>
+        <a class="admin-nav-link" href="../campaigns.html" target="_blank" rel="noopener"><i class="bi bi-bar-chart-line"></i><span>View campaigns</span></a>
+      </nav>
+      <div class="admin-sidebar-label">Account</div>
+      <nav class="admin-nav admin-nav-secondary">
+        <button class="admin-nav-link" id="signOutBtn" type="button"><i class="bi bi-box-arrow-right"></i><span>Sign out</span></button>
+      </nav>
+      <button class="admin-collapse" id="sidebarToggle" type="button" aria-label="Collapse sidebar"><i class="bi bi-chevron-double-left"></i><span>Hide</span></button>
+    </aside>
+    <div class="admin-scrim" id="sidebarScrim"></div>
+
+    <main class="admin-main campaign-admin-main">
+      <header class="admin-header">
+        <div class="admin-heading-wrap">
+          <button class="admin-mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open navigation"><i class="bi bi-list"></i></button>
+          <div><h1>Campaigns</h1><p>Import Meltwater campaign exports, review and publish campaign-specific analytics.</p></div>
+        </div>
+        <div class="admin-header-actions">
+          <div class="admin-user-pill"><i class="bi bi-person-circle"></i><span id="userEmail"></span></div>
+          <a class="admin-icon-btn" href="../campaigns.html" target="_blank" rel="noopener" aria-label="View Campaign Performance"><i class="bi bi-box-arrow-up-right"></i></a>
+        </div>
+      </header>
+
+      <div id="campaignAdminAlert" class="alert d-none" role="alert"></div>
+
+      <section class="campaign-admin-layout">
+        <div class="campaign-admin-panel campaign-list-panel">
+          <div class="campaign-admin-panel-head">
+            <div><h2>Campaign library</h2><p>Draft, preview, publish and share individual campaign reports.</p></div>
+            <button id="refreshCampaignsBtn" class="campaign-icon-button" type="button" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+          <div id="campaignList" class="campaign-list"><div class="campaign-admin-loading">Loading campaigns…</div></div>
+        </div>
+
+        <div class="campaign-admin-panel import-panel">
+          <div class="campaign-admin-panel-head compact">
+            <div><h2>Import campaign</h2><p>Upload the tagged Meltwater XLSX export.</p></div>
+          </div>
+
+          <form id="campaignImportForm" class="campaign-import-form">
+            <label class="form-label" for="campaignName">Campaign name</label>
+            <input id="campaignName" class="form-control" type="text" placeholder="e.g. Asset Vision">
+
+            <label class="form-label" for="campaignFile">Meltwater Excel</label>
+            <label class="campaign-file-drop" for="campaignFile">
+              <i class="bi bi-file-earmark-spreadsheet"></i>
+              <span><strong>Choose XLSX file</strong><small id="campaignFileName">No file selected</small></span>
+            </label>
+            <input id="campaignFile" class="visually-hidden" type="file" accept=".xlsx,.xls" required>
+
+            <button id="analyseCampaignBtn" class="btn btn-dark w-100" type="submit"><i class="bi bi-search me-2"></i>Analyse Excel</button>
+          </form>
+
+          <div id="campaignAnalysis" class="campaign-analysis d-none" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal fade" id="campaignShareModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content campaign-share-modal">
+        <div class="modal-header"><div><h5 class="modal-title">Share campaign</h5><small id="shareCampaignName"></small></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <label class="form-label" for="shareExpiry">View-only link expires</label>
+          <select id="shareExpiry" class="form-select">
+            <option value="1">24 hours</option>
+            <option value="7" selected>7 days</option>
+            <option value="30">30 days</option>
+          </select>
+          <button id="createShareLinkBtn" class="btn btn-success w-100 mt-3" type="button"><i class="bi bi-link-45deg me-2"></i>Create temporary link</button>
+          <div id="shareLinkResult" class="share-link-result d-none"></div>
+          <div class="share-links-head"><strong>Active links</strong><button id="reloadShareLinksBtn" type="button">Refresh</button></div>
+          <div id="shareLinksList" class="share-links-list"><span class="text-muted">Select a campaign.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/ui-shell.js"></script>
+  <script src="../assets/js/campaign-xlsx-parser.js"></script>
+  <script src="../assets/js/campaign-admin.js"></script>
+</body>
+</html>
