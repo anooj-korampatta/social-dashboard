@@ -1071,7 +1071,9 @@
     $("#monthMeta").textContent = month.label;
     $("#comparisonMeta").textContent = `vs ${month.previousLabel}`;
     $("#sourceMeta").textContent = `Source: ${month.source}`;
-    $("#overviewContent").innerHTML = overviewMarkup(month);
+    const overviewRoot = $("#overviewContent");
+    overviewRoot?.classList.remove("loading-state", "empty-state");
+    if (overviewRoot) overviewRoot.innerHTML = overviewMarkup(month);
     $("#linkedinContent").innerHTML = platformMarkup("linkedin", month.platforms.linkedin, month);
     $("#instagramContent").innerHTML = platformMarkup("instagram", month.platforms.instagram, month);
     $("#xContent").innerHTML = platformMarkup("x", month.platforms.x, month);
