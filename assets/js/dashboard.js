@@ -4,7 +4,11 @@
 
   const api = window.GWC_SUPABASE;
   const supabase = api?.client || null;
-  const state = { reports: [], activeReportId: null, bundle: null, charts: {}, chartRange: "5", trendRange: "5", trendMetric: "impressions" };
+  const savedOverviewTab = (() => {
+    try { return sessionStorage.getItem("gwc-overview-section") || "summary"; }
+    catch { return "summary"; }
+  })();
+  const state = { reports: [], activeReportId: null, bundle: null, charts: {}, chartRange: "5", trendRange: "5", trendMetric: "impressions", overviewTab: savedOverviewTab, currentModel: null };
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const fmt = new Intl.NumberFormat("en-GB");
@@ -642,6 +646,73 @@
       </button>`;
   }
 
+
+  const overviewTabIds = ["summary", "performance", "trend", "mom", "channels"];
+
+  function safeOverviewTab(value) {
+    return overviewTabIds.includes(value) ? value : "summary";
+  }
+
+  function overviewTabButton(id, label, icon) {
+    const active = safeOverviewTab(state.overviewTab) === id;
+    return `<button class="overview-section-tab ${active ? "active" : ""}" type="button" role="tab" id="overview-tab-${id}" data-overview-section-tab="${id}" aria-controls="overview-panel-${id}" aria-selected="${active}" tabindex="${active ? "0" : "-1"}">
+      <i class="bi ${icon}" aria-hidden="true"></i><span>${label}</span>
+    </button>`;
+  }
+
+  function overviewPanelAttributes(id) {
+    const active = safeOverviewTab(state.overviewTab) === id;
+    return `id="overview-panel-${id}" class="overview-tab-panel overview-${id}-panel ${active ? "is-active" : ""}" role="tabpanel" aria-labelledby="overview-tab-${id}" data-overview-section-panel="${id}" ${active ? "" : "hidden"}`;
+  }
+
+  function activateOverviewTab(tabId, month = state.currentModel, focusTab = false) {
+    const next = safeOverviewTab(tabId);
+    state.overviewTab = next;
+    try { sessionStorage.setItem("gwc-overview-section", next); } catch {}
+
+    const shell = $("#overviewContent .overview-tabs-shell");
+    if (!shell) return;
+
+    $$('[data-overview-section-tab]', shell).forEach(button => {
+      const selected = button.dataset.overviewSectionTab === next;
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-selected", String(selected));
+      button.tabIndex = selected ? 0 : -1;
+      if (selected && focusTab) button.focus();
+    });
+
+    $$('[data-overview-section-panel]', shell).forEach(panel => {
+      const selected = panel.dataset.overviewSectionPanel === next;
+      panel.hidden = !selected;
+      panel.classList.toggle("is-active", selected);
+    });
+
+    if (next === "performance" && month && $("#pane-overview")?.classList.contains("active")) {
+      requestAnimationFrame(() => buildOverviewTrend(month, state.trendMetric));
+    }
+  }
+
+  function syncOverviewViewportMode() {
+    const main = $(".app-main");
+    const overviewActive = Boolean($("#pane-overview")?.classList.contains("active"));
+    main?.classList.toggle("overview-viewport-mode", overviewActive);
+
+    if (overviewActive && state.overviewTab === "performance" && state.currentModel) {
+      requestAnimationFrame(() => buildOverviewTrend(state.currentModel, state.trendMetric));
+    }
+  }
+
+  function wireOverviewViewportMode() {
+    const root = document.documentElement;
+    if (root.dataset.overviewViewportWired === "true") {
+      syncOverviewViewportMode();
+      return;
+    }
+    root.dataset.overviewViewportWired = "true";
+    $$('[data-bs-toggle="tab"]').forEach(control => control.addEventListener("shown.bs.tab", syncOverviewViewportMode));
+    syncOverviewViewportMode();
+  }
+
   function overviewMarkup(month) {
     const o = month.overview;
     const c = month.comparison.overview;
@@ -654,82 +725,104 @@
       { key: "x", label: "X", value: p.x?.[metric], signed, unavailable: p.x?.[metric] === null || p.x?.[metric] === undefined }
     ];
 
+    state.overviewTab = safeOverviewTab(state.overviewTab);
+
     return `
-      <div class="section-intro executive-overview-heading">
-        <div>
-          <div class="section-kicker">Performance overview</div>
-          <h2 class="section-title executive-title">At a glance</h2>
-          <div class="overview-lead">Organic social performance across LinkedIn, Instagram and X</div>
+      <div class="overview-tabs-shell">
+        <div class="overview-tabs-header-row">
+          <div>
+            <div class="section-kicker">Performance overview</div>
+            <h2 class="section-title executive-title">Explore the monthly report</h2>
+            <div class="overview-lead">Move between the executive summary, chart, trend, comparison and channel views.</div>
+          </div>
+          <div class="comparison-badge executive-comparison"><span class="comparison-dot"></span>${month.label} vs ${month.previousLabel}</div>
         </div>
-        <div class="comparison-badge executive-comparison"><span class="comparison-dot"></span>${month.label} vs ${month.previousLabel}</div>
-      </div>
 
-      <div class="metric-grid overview-metrics executive-metrics">
-        ${metricCard({ value: o.posts, label: "Posts published", comparison: c.posts, comparisonLabel: previousShort, icon: "bi-file-earmark-text", breakdown: split("posts") })}
-        ${metricCard({ value: o.followers, label: "Followers", comparison: c.followers, comparisonLabel: previousShort, icon: "bi-people", breakdown: split("followers") })}
-        ${metricCard({ value: o.newFollowers, label: "Net new followers", comparison: c.newFollowers, comparisonLabel: previousShort, valuePrefix: o.newFollowers !== null && o.newFollowers >= 0 ? "+" : "", icon: "bi-person-plus", breakdown: split("newFollowers", true) })}
-        ${metricCard({ value: o.impressions, label: "Impressions", comparison: c.impressions, comparisonLabel: previousShort, icon: "bi-eye", breakdown: split("impressions") })}
-        ${metricCard({ value: o.reach, label: "Reach", comparison: c.reach, comparisonLabel: previousShort, icon: "bi-broadcast", breakdown: split("reach") })}
-        ${metricCard({ value: o.engagements, label: "Engagements", comparison: c.engagements, comparisonLabel: previousShort, icon: "bi-hand-thumbs-up", breakdown: split("engagements") })}
-      </div>
+        <div class="overview-section-tabs" role="tablist" aria-label="Dashboard overview sections">
+          ${overviewTabButton("summary", "At a glance", "bi-grid-3x2-gap")}
+          ${overviewTabButton("performance", "Performance chart", "bi-graph-up")}
+          ${overviewTabButton("trend", "Monthly trend", "bi-table")}
+          ${overviewTabButton("mom", "Month-on-month", "bi-arrow-left-right")}
+          ${overviewTabButton("channels", "Channels", "bi-diagram-3")}
+        </div>
 
-      <div class="overview-method-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span><strong>Reach methodology:</strong> Reach combines LinkedIn Members Reached and Instagram Accounts Reached. Meltwater does not report reach for X. Month-on-month reach comparisons use only platforms with comparable reach data available in both periods.</span></div>
-
-      <div class="performance-grid">
-        <section class="panel performance-chart-panel">
-          <div class="panel-header performance-panel-header">
-            <div>
-              <h3 class="panel-title">Performance chart</h3>
-              <div class="panel-subtitle" id="chartPeriodLabel">${trendPeriodLabel(month.trend, state.chartRange)}</div>
+        <div class="overview-tab-viewport">
+          <section ${overviewPanelAttributes("summary")}>
+            <div class="metric-grid overview-metrics executive-metrics">
+              ${metricCard({ value: o.posts, label: "Posts published", comparison: c.posts, comparisonLabel: previousShort, icon: "bi-file-earmark-text", breakdown: split("posts") })}
+              ${metricCard({ value: o.followers, label: "Followers", comparison: c.followers, comparisonLabel: previousShort, icon: "bi-people", breakdown: split("followers") })}
+              ${metricCard({ value: o.newFollowers, label: "Net new followers", comparison: c.newFollowers, comparisonLabel: previousShort, valuePrefix: o.newFollowers !== null && o.newFollowers >= 0 ? "+" : "", icon: "bi-person-plus", breakdown: split("newFollowers", true) })}
+              ${metricCard({ value: o.impressions, label: "Impressions", comparison: c.impressions, comparisonLabel: previousShort, icon: "bi-eye", breakdown: split("impressions") })}
+              ${metricCard({ value: o.reach, label: "Reach", comparison: c.reach, comparisonLabel: previousShort, icon: "bi-broadcast", breakdown: split("reach") })}
+              ${metricCard({ value: o.engagements, label: "Engagements", comparison: c.engagements, comparisonLabel: previousShort, icon: "bi-hand-thumbs-up", breakdown: split("engagements") })}
             </div>
-            <div class="performance-controls">
-              <select class="metric-switch" id="chartRange" aria-label="Select chart period">
-                <option value="5" ${state.chartRange === "5" ? "selected" : ""}>Last 5 months</option>
-                <option value="6" ${state.chartRange === "6" ? "selected" : ""}>Last 6 months</option>
-                <option value="ytd" ${state.chartRange === "ytd" ? "selected" : ""}>Year to date</option>
-                <option value="12" ${state.chartRange === "12" ? "selected" : ""}>Last 12 months</option>
-              </select>
-              <select class="metric-switch" id="overviewMetric" aria-label="Select chart metric">
-                <option value="impressions" ${state.trendMetric === "impressions" ? "selected" : ""}>Impressions</option>
-                <option value="engagements" ${state.trendMetric === "engagements" ? "selected" : ""}>Engagements</option>
-                <option value="followers" ${state.trendMetric === "followers" ? "selected" : ""}>Followers</option>
-                <option value="posts" ${state.trendMetric === "posts" ? "selected" : ""}>Posts</option>
-              </select>
-            </div>
-          </div>
-          <div class="chart-wrap executive-chart"><canvas id="overviewTrendChart" aria-label="Platform performance chart"></canvas></div>
-        </section>
+            <div class="overview-method-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span><strong>Reach methodology:</strong> Reach combines LinkedIn Members Reached and Instagram Accounts Reached. Meltwater does not report reach for X. Month-on-month reach comparisons use only platforms with comparable reach data available in both periods.</span></div>
+          </section>
 
-        <section class="panel monthly-trend-panel">
-          <div class="panel-header performance-panel-header">
-            <div>
-              <h3 class="panel-title">Monthly trend</h3>
-              <div class="panel-subtitle" id="trendPeriodLabel">${trendPeriodLabel(month.trend, state.trendRange)}</div>
+          <section ${overviewPanelAttributes("performance")}>
+            <div class="panel performance-chart-panel overview-single-panel">
+              <div class="panel-header performance-panel-header">
+                <div>
+                  <h3 class="panel-title">Performance chart</h3>
+                  <div class="panel-subtitle" id="chartPeriodLabel">${trendPeriodLabel(month.trend, state.chartRange)}</div>
+                </div>
+                <div class="performance-controls">
+                  <select class="metric-switch" id="chartRange" aria-label="Select chart period">
+                    <option value="5" ${state.chartRange === "5" ? "selected" : ""}>Last 5 months</option>
+                    <option value="6" ${state.chartRange === "6" ? "selected" : ""}>Last 6 months</option>
+                    <option value="ytd" ${state.chartRange === "ytd" ? "selected" : ""}>Year to date</option>
+                    <option value="12" ${state.chartRange === "12" ? "selected" : ""}>Last 12 months</option>
+                  </select>
+                  <select class="metric-switch" id="overviewMetric" aria-label="Select chart metric">
+                    <option value="impressions" ${state.trendMetric === "impressions" ? "selected" : ""}>Impressions</option>
+                    <option value="engagements" ${state.trendMetric === "engagements" ? "selected" : ""}>Engagements</option>
+                    <option value="followers" ${state.trendMetric === "followers" ? "selected" : ""}>Followers</option>
+                    <option value="posts" ${state.trendMetric === "posts" ? "selected" : ""}>Posts</option>
+                  </select>
+                </div>
+              </div>
+              <div class="chart-wrap executive-chart"><canvas id="overviewTrendChart" aria-label="Platform performance chart"></canvas></div>
             </div>
-            <select class="metric-switch trend-range-switch" id="trendRange" aria-label="Select monthly trend period">
-              <option value="5" ${state.trendRange === "5" ? "selected" : ""}>Last 5 months</option>
-              <option value="6" ${state.trendRange === "6" ? "selected" : ""}>Last 6 months</option>
-              <option value="ytd" ${state.trendRange === "ytd" ? "selected" : ""}>Year to date</option>
-              <option value="12" ${state.trendRange === "12" ? "selected" : ""}>Last 12 months</option>
-            </select>
-          </div>
-          <div id="historicalTrendTable">${historicalTrendTableMarkup(month.trend, state.trendRange)}</div>
-        </section>
-      </div>
+          </section>
 
-      <div class="panel-grid overview-lower-grid">
-        <section class="panel">
-          <div class="panel-header"><div><h3 class="panel-title">Month-on-month performance</h3><div class="panel-subtitle">${month.previousLabel} to ${month.label}</div></div></div>
-          ${momTableMarkup(month)}
-        </section>
-        <section class="panel channel-panel">
-          <div class="panel-header"><div><h3 class="panel-title">Channel performance</h3><div class="panel-subtitle">Select a channel to view details</div></div></div>
-          <div class="platform-strip">
-            ${platformMini("linkedin", month.platforms.linkedin)}
-            ${platformMini("instagram", month.platforms.instagram)}
-            ${platformMini("x", month.platforms.x)}
-          </div>
-        </section>
+          <section ${overviewPanelAttributes("trend")}>
+            <div class="panel monthly-trend-panel overview-single-panel">
+              <div class="panel-header performance-panel-header">
+                <div>
+                  <h3 class="panel-title">Monthly trend</h3>
+                  <div class="panel-subtitle" id="trendPeriodLabel">${trendPeriodLabel(month.trend, state.trendRange)}</div>
+                </div>
+                <select class="metric-switch trend-range-switch" id="trendRange" aria-label="Select monthly trend period">
+                  <option value="5" ${state.trendRange === "5" ? "selected" : ""}>Last 5 months</option>
+                  <option value="6" ${state.trendRange === "6" ? "selected" : ""}>Last 6 months</option>
+                  <option value="ytd" ${state.trendRange === "ytd" ? "selected" : ""}>Year to date</option>
+                  <option value="12" ${state.trendRange === "12" ? "selected" : ""}>Last 12 months</option>
+                </select>
+              </div>
+              <div id="historicalTrendTable">${historicalTrendTableMarkup(month.trend, state.trendRange)}</div>
+            </div>
+          </section>
+
+          <section ${overviewPanelAttributes("mom")}>
+            <div class="panel overview-single-panel overview-mom-panel">
+              <div class="panel-header">
+                <div><h3 class="panel-title">Month-on-month performance</h3><div class="panel-subtitle">${month.previousLabel} to ${month.label}</div></div>
+              </div>
+              <div class="overview-mom-table-wrap">${momTableMarkup(month)}</div>
+            </div>
+          </section>
+
+          <section ${overviewPanelAttributes("channels")}>
+            <div class="panel overview-single-panel channel-panel overview-channels-panel">
+              <div class="panel-header"><div><h3 class="panel-title">Channel performance</h3><div class="panel-subtitle">Select a channel card to open its detailed report.</div></div></div>
+              <div class="platform-strip">
+                ${platformMini("linkedin", month.platforms.linkedin)}
+                ${platformMini("instagram", month.platforms.instagram)}
+                ${platformMini("x", month.platforms.x)}
+              </div>
+            </div>
+          </section>
+        </div>
       </div>`;
   }
 
@@ -952,9 +1045,29 @@
       btn.setAttribute("title", `${isOpen ? "Hide" : "Show"} channel breakdown`);
       panel.setAttribute("aria-hidden", String(!isOpen));
     }));
+
+    const overviewTabs = $$('[data-overview-section-tab]');
+    overviewTabs.forEach((btn, index) => {
+      btn.addEventListener("click", () => activateOverviewTab(btn.dataset.overviewSectionTab, month));
+      btn.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === "ArrowRight") nextIndex = (index + 1) % overviewTabs.length;
+        if (event.key === "ArrowLeft") nextIndex = (index - 1 + overviewTabs.length) % overviewTabs.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = overviewTabs.length - 1;
+        const next = overviewTabs[nextIndex];
+        activateOverviewTab(next.dataset.overviewSectionTab, month, true);
+      });
+    });
+
+    wireOverviewViewportMode();
   }
 
   function render(month) {
+    state.currentModel = month;
+    state.overviewTab = safeOverviewTab(state.overviewTab);
     $("#monthMeta").textContent = month.label;
     $("#comparisonMeta").textContent = `vs ${month.previousLabel}`;
     $("#sourceMeta").textContent = `Source: ${month.source}`;
@@ -963,11 +1076,12 @@
     $("#instagramContent").innerHTML = platformMarkup("instagram", month.platforms.instagram, month);
     $("#xContent").innerHTML = platformMarkup("x", month.platforms.x, month);
     $("#insightsContent").innerHTML = insightsMarkup(month);
-    buildOverviewTrend(month, state.trendMetric);
     buildCadence("linkedin", month.platforms.linkedin);
     buildCadence("instagram", month.platforms.instagram);
     buildCadence("x", month.platforms.x);
     wireDynamicControls(month);
+    activateOverviewTab(state.overviewTab, month);
+    syncOverviewViewportMode();
     $("#downloadPdfBtn").disabled = false;
   }
 
