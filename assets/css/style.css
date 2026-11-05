@@ -1241,3 +1241,38 @@ html[data-theme="dark"] .overview-channels-panel .platform-mini:focus-visible {
     border-bottom: 1px solid var(--line-soft);
   }
 }
+
+/* At-a-glance: add methodology spacing without normal scrolling */
+@media (min-width: 901px) {
+  /* No scrollbar while all KPI cards are collapsed */
+  .overview-summary-panel {
+    overflow-y: hidden;
+  }
+
+  /* Recover enough vertical space for the methodology note */
+  .overview-summary-panel
+  .executive-metric-card:not(.is-breakdown-open) {
+    min-height: 202px; /* previously 214px */
+  }
+
+  .overview-summary-panel .overview-method-note {
+    margin: 16px 2px 0;
+  }
+
+  /* Allow scrolling only after a channel breakdown is expanded */
+  .overview-summary-panel:has(
+    .executive-metric-card.is-breakdown-open
+  ) {
+    overflow-y: auto;
+  }
+}
+@media (min-width: 901px) and (max-height: 820px) {
+  .overview-summary-panel
+  .executive-metric-card:not(.is-breakdown-open) {
+    min-height: 176px;
+  }
+
+  .overview-summary-panel .overview-method-note {
+    margin-top: 12px;
+  }
+}
