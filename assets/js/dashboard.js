@@ -2,6 +2,14 @@
 (() => {
   "use strict";
 
+  const featuredPostMetricsStylesheet = "assets/css/featured-post-metrics.css";
+  if (!document.querySelector(`link[href="${featuredPostMetricsStylesheet}"]`)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = featuredPostMetricsStylesheet;
+    document.head.appendChild(link);
+  }
+
   const api = window.GWC_SUPABASE;
   const supabase = api?.client || null;
   const savedOverviewTab = (() => {
@@ -329,17 +337,12 @@
         title: type === "top" ? "Add the top-performing post in the CMS" : "Add the needs-attention post in the CMS",
         er: null,
         impressions: null,
+        reach: null,
         engagements: null,
-        extraLabel: "Likes",
-        extraValue: null
+        likes: null,
+        linkClicks: null
       };
     }
-
-    // Instagram cards use Likes rather than Link clicks.
-    // LinkedIn/X keep Link clicks when Meltwater provides them, otherwise Likes.
-    const useLikes = platform === "instagram" || row.link_clicks === null || row.link_clicks === undefined;
-    const extraLabel = useLikes ? "Likes" : "Link clicks";
-    const extraValue = useLikes ? row.likes : row.link_clicks;
 
     return {
       image: row.image_url || placeholderImage(platform, type),
@@ -348,9 +351,10 @@
       title: row.title || row.post_url || "Untitled post",
       er: row.engagement_rate,
       impressions: row.impressions,
+      reach: row.reach,
       engagements: row.engagements,
-      extraLabel,
-      extraValue
+      likes: row.likes,
+      linkClicks: row.link_clicks
     };
   }
 
@@ -826,11 +830,51 @@
       </div>`;
   }
 
-  function postCard(label, post, platformName) {
+  function featuredPostMetrics(post, platformKey) {
+    const common = [
+      { label: "Engagement rate", value: percent(post.er) },
+      { label: "Impressions", value: number(post.impressions) }
+    ];
+
+    if (platformKey === "linkedin") {
+      return [
+        ...common,
+        { label: "Engagements", value: number(post.engagements) },
+        { label: "Link clicks", value: number(post.linkClicks) },
+        { label: "Likes", value: number(post.likes) }
+      ];
+    }
+
+    if (platformKey === "instagram") {
+      return [
+        ...common,
+        { label: "Reach", value: number(post.reach) },
+        { label: "Engagements", value: number(post.engagements) },
+        { label: "Likes", value: number(post.likes) }
+      ];
+    }
+
+    if (platformKey === "x") {
+      return [
+        ...common,
+        { label: "Engagements", value: number(post.engagements) },
+        { label: "Likes", value: number(post.likes) }
+      ];
+    }
+
+    return [
+      ...common,
+      { label: "Engagements", value: number(post.engagements) },
+      { label: "Likes", value: number(post.likes) }
+    ];
+  }
+
+  function postCard(label, post, platformKey, platformName) {
     const thumbnail = `<img class="post-thumb" src="${post.image}" alt="${platformName} ${label.toLowerCase()} post thumbnail">`;
     const thumbnailMarkup = post.postUrl
       ? `<a class="post-thumb-link" href="${post.postUrl}" target="_blank" rel="noopener noreferrer" aria-label="Open ${platformName} ${label.toLowerCase()} post">${thumbnail}<span class="post-thumb-open" aria-hidden="true"><i class="bi bi-box-arrow-up-right"></i></span></a>`
       : thumbnail;
+    const metrics = featuredPostMetrics(post, platformKey);
 
     return `
       <article class="post-card">
@@ -838,11 +882,8 @@
         <div class="post-copy">
           <div class="post-kicker">${label} · ${post.date}</div>
           <div class="post-title">${post.title}</div>
-          <div class="post-stats">
-            <div><div class="post-stat-value">${percent(post.er)}</div><div class="post-stat-label">Engagement rate</div></div>
-            <div><div class="post-stat-value">${number(post.impressions)}</div><div class="post-stat-label">Impressions</div></div>
-            <div><div class="post-stat-value">${number(post.engagements)}</div><div class="post-stat-label">Engagements</div></div>
-            <div><div class="post-stat-value">${number(post.extraValue)}</div><div class="post-stat-label">${post.extraLabel}</div></div>
+          <div class="post-stats post-stats--${metrics.length}">
+            ${metrics.map(metric => `<div class="post-stat"><div class="post-stat-value">${metric.value}</div><div class="post-stat-label">${metric.label}</div></div>`).join("")}
           </div>
         </div>
       </article>`;
@@ -893,8 +934,8 @@
       </div>
 
       <div class="post-grid">
-        ${postCard("Top performing", p.topPost, p.name)}
-        ${postCard("Needs attention", p.lowPost, p.name)}
+        ${postCard("Top performing", p.topPost, key, p.name)}
+        ${postCard("Needs attention", p.lowPost, key, p.name)}
       </div>
 
       <div class="action-strip">
