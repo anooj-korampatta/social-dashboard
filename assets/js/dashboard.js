@@ -1037,6 +1037,7 @@
       const card = btn.closest(".executive-metric-card");
       const panelId = btn.getAttribute("aria-controls");
       const panel = panelId ? document.getElementById(panelId) : null;
+      const summaryPane = card?.closest(".overview-summary-panel");
       if (!card || !panel) return;
 
       const isOpen = card.classList.toggle("is-breakdown-open");
@@ -1044,6 +1045,36 @@
       btn.setAttribute("aria-label", `${isOpen ? "Hide" : "Show"} channel breakdown`);
       btn.setAttribute("title", `${isOpen ? "Hide" : "Show"} channel breakdown`);
       panel.setAttribute("aria-hidden", String(!isOpen));
+
+      if (!summaryPane) return;
+
+      if (isOpen) {
+        /* Keep the expanded card and its breakdown visible inside the pane. */
+        window.setTimeout(() => {
+          const paneRect = summaryPane.getBoundingClientRect();
+          const cardRect = card.getBoundingClientRect();
+          const overflowBottom = cardRect.bottom - paneRect.bottom;
+          if (overflowBottom > 0) {
+            summaryPane.scrollBy({ top: overflowBottom + 18, behavior: "smooth" });
+          }
+        }, 300);
+        return;
+      }
+
+      /*
+       * Collapsing a lower-row card leaves the pane's old scrollTop in place,
+       * which makes the first row look clipped. Once every breakdown is closed,
+       * restore the pane to its natural top position after the height transition.
+       */
+      const resetSummaryScroll = () => {
+        const anotherCardIsOpen = summaryPane.querySelector(
+          ".executive-metric-card.is-breakdown-open"
+        );
+        if (!anotherCardIsOpen) summaryPane.scrollTo({ top: 0, behavior: "auto" });
+      };
+
+      requestAnimationFrame(resetSummaryScroll);
+      window.setTimeout(resetSummaryScroll, 340);
     }));
 
     const overviewTabs = $$('[data-overview-section-tab]');
