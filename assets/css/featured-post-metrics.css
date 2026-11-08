@@ -1,0 +1,34 @@
+/* Platform-specific featured-post metrics
+   Loaded automatically by dashboard.js. */
+
+.post-stats.post-stats--5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+
+.post-stats.post-stats--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.post-stats .post-stat {
+  min-width: 0;
+}
+
+.post-stats--5 .post-stat-label {
+  white-space: normal;
+  line-height: 1.15;
+  min-height: 18px;
+}
+
+@media (max-width: 1280px) {
+  .post-stats.post-stats--5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .post-stats.post-stats--5,
+  .post-stats.post-stats--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
