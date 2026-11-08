@@ -236,9 +236,18 @@
     }
 
     const previousLabel = comparison?.previousLabel || "Previous";
-    const previousHtml = comparison && comparison.previous !== null && comparison.previous !== undefined
-      ? `<div class="metric-previous">${previousLabel}: ${valuePrefix}${number(comparison.previous)}${valueSuffix}</div>`
-      : '<div class="metric-previous">Previous value unavailable</div>';
+    const hasInlineComparisonDetail = Boolean(
+      comparison?.delta !== null &&
+      comparison?.delta !== undefined &&
+      comparison?.note &&
+      comparison?.previous !== null &&
+      comparison?.previous !== undefined
+    );
+    const previousHtml = hasInlineComparisonDetail
+      ? ""
+      : comparison && comparison.previous !== null && comparison.previous !== undefined
+        ? `<div class="metric-previous">${previousLabel}: ${valuePrefix}${number(comparison.previous)}${valueSuffix}</div>`
+        : '<div class="metric-previous">Previous value unavailable</div>';
     const trendGlyph = comparison?.delta < 0 ? "bi-graph-down-arrow" : "bi-graph-up-arrow";
     const trendClass = comparison?.delta < 0 ? "negative" : comparison?.delta > 0 ? "positive" : "neutral";
 
@@ -267,7 +276,7 @@
       : "";
 
     const comparisonNote = comparison?.delta !== null && comparison?.delta !== undefined && comparison?.note
-      ? `<div class="metric-comparison-note">${comparison.note}</div>`
+      ? `<div class="metric-comparison-note">${comparison.note}${hasInlineComparisonDetail ? ` <span aria-hidden="true">|</span> ${previousLabel}: ${valuePrefix}${number(comparison.previous)}${valueSuffix}` : ""}</div>`
       : "";
 
     return `
